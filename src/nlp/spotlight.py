@@ -7,7 +7,7 @@ from tqdm import tqdm
 def extract_concepts(text):
     try:
         return spotlight.annotate("http://127.0.0.1:2229/rest/annotate", text, confidence=0.5, support=100)
-    except spotlight.SpotlightException as e:
+    except Exception as e:
         return []
 
 
