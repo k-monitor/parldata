@@ -62,7 +62,6 @@ def main(tabular_metadata, zipped_content, out_file):
     data = read_metadata(tabular_metadata)
     texts = read_zipped_contents(zipped_content)
     data["Text"] = texts
-    # data["Entities"] = entities.extract_entities(data.Text.values)
     data.to_csv(out_file, sep="\t")
 
 

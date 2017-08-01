@@ -10,10 +10,10 @@ def extract_entities(texts):
     return entities
 
 
-def main(merged_tsv):
-    df = pd.read_csv(merged_tsv, sep="\t").iloc[:10]
+def main(merged_tsv, entities_tsv):
+    df = pd.read_csv(merged_tsv, sep="\t").set_index("Hash")
     df["Entities"] = extract_entities(df.Text.values)
-    print(df)
+    df[["Entities"]].to_csv(entities_tsv)
 
 
 if __name__ == '__main__':
