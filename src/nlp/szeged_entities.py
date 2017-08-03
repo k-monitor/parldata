@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 
 def extract_entities(texts):
-    nlp = hunlp.HuNlp()
+    nlp = hunlp.HuNlp(endpoint="v1/entities")
     entities = [list(nlp(text).entities) if type(text) == str else [] for text in tqdm(texts)]
     return entities
 

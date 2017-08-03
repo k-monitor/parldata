@@ -8,15 +8,15 @@ def parse_entity(entity):
 
 
 def extract_entities(texts):
-    entities = [[parse_entity(entity) for entity in nlp.Text(text)] \
+    entities = [[parse_entity(entity) for entity in nlp.Text(text, "hu").entities] \
                 if type(text) == str else [] for text in tqdm(texts)]
     return entities
 
 
-def main(merged_tsv, entities_tsv):
+def main(merged_tsv, entities_pkl):
     df = pd.read_csv(merged_tsv, sep="\t").set_index("Hash")
     df["Entities"] = extract_entities(df.Text.values)
-    df[["Entities"]].to_csv(entities_tsv)
+    df[["Entities"]].to_pickle(entities_pkl)
 
 
 if __name__ == '__main__':
