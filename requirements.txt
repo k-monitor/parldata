@@ -40,6 +40,8 @@ azure-servicefabric==5.6.130
 azure-servicemanagement-legacy==0.20.6
 azure-storage==0.34.3
 bleach==2.0.0
+boto==2.48.0
+bz2file==0.98
 cachetools==2.0.0
 certifi==2017.7.27.1
 cffi==1.10.0
@@ -52,6 +54,7 @@ decorator==4.1.2
 dill==0.2.7.1
 entrypoints==0.2.3
 ftfy==4.4.3
+gensim==2.3.0
 html5lib==0.999999999
 hunlp==0.2.0
 idna==2.5
@@ -89,6 +92,7 @@ pexpect==4.2.1
 pickleshare==0.7.4
 Pillow==4.2.1
 plac==0.9.6
+polyglot==16.7.4
 preshed==1.0.0
 prompt-toolkit==1.0.15
 ptyprocess==0.5.2
@@ -111,6 +115,7 @@ scikit-learn==0.18.2
 scipy==0.19.1
 simplegeneric==0.8.1
 six==1.10.0
+smart-open==1.5.3
 spacy==1.9.0
 termcolor==1.1.0
 terminado==0.6
