@@ -1,4 +1,5 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3
+.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3 \
+	wikipedia_dump dbpedia_dump extra_requirements hunlp_serve spotlight_serve
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -20,8 +21,34 @@ endif
 # COMMANDS                                                                      #
 #################################################################################
 
+wikipedia_dump:
+	cd data/external && wget http://download.wikimedia.org/huwiki/latest/huwiki-latest-pages-articles.xml.bz2
+
+dbpedia_dump:
+	cd data/external && wget http://downloads.dbpedia.org/2016-10/core-i18n/hu/page_ids_hu.ttl.bz2 && bzip2 -d page_ids_hu.ttl.bz2
+	cd data/external && wget http://downloads.dbpedia.org/2016-10/core-i18n/hu/page_links_hu.ttl.bz2 && bzip2 -d page_links_hu.ttl.bz2
+
+
+extra_requirements:
+	pip install https://github.com/oroszgy/hunlp/releases/download/0.2/hunlp-0.2.0.tar.gz
+
+	conda install -c conda-forge/label/broken icu
+	easy_install pyicu
+
+	pip install pycld2 morfessor
+	pip install https://github.com/aboSamoor/polyglot/archive/master.zip
+
+	polyglot download ner2.hu
+	polyglot download embeddings2.hu
+
+hunlp_serve:
+	docker run -it -p 9090:9090 oroszgy/hunlp
+
+spotlight_serve:
+	docker run -it -p 2229:80 dbpedia/spotlight-hungarian spotlight.sh
+
 ## Install Python Dependencies
-requirements: test_environment
+requirements: test_environment extra_requirements
 	pip install -r requirements.txt
 
 ## Make Dataset
