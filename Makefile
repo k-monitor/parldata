@@ -28,6 +28,11 @@ dbpedia_dump:
 	cd data/external && wget http://downloads.dbpedia.org/2016-10/core-i18n/hu/page_ids_hu.ttl.bz2 && bzip2 -d page_ids_hu.ttl.bz2
 	cd data/external && wget http://downloads.dbpedia.org/2016-10/core-i18n/hu/page_links_hu.ttl.bz2 && bzip2 -d page_links_hu.ttl.bz2
 
+dbpedia_inlinks:
+	cat ./data/external/page_links_hu.ttl \
+	| awk -F" " 'NR>1 {print substr($$3, 2, length($$3)-2)}' \
+	| sort | uniq -c | sed -e 's/^ *//' \
+	| sort -nr > ./data/external/page_inlinks.csv
 
 extra_requirements:
 	pip install https://github.com/oroszgy/hunlp/releases/download/0.2/hunlp-0.2.0.tar.gz
