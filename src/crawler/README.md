@@ -9,6 +9,8 @@
 
     scrapy crawl parldata_1994-1998
 
+    scrapy crawl parldata_1998-2002
+
 The results will be exported to json files named by the crawler and crawliing timestamp.
 
 

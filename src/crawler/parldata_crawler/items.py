@@ -29,6 +29,7 @@ class Speech(scrapy.Item):
     id = scrapy.Field()
     url = scrapy.Field()
     speaker = scrapy.Field()
+    speaker_party = scrapy.Field()  # 1998-
     speaker_url = scrapy.Field() # 1994-
     text = scrapy.Field()
     prev_speech_url = scrapy.Field()
@@ -38,3 +39,7 @@ class Speech(scrapy.Item):
     bill_details = scrapy.Field()  # 1994-
     bill_title = scrapy.Field() # 1994-
     bill_url = scrapy.Field() # 1994-
+    type = scrapy.Field() # 1998-
+    committee = scrapy.Field() # 1998-
+    started_at = scrapy.Field()  # 1998-
+    duration = scrapy.Field()  # 1998-
