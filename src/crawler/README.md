@@ -10,3 +10,10 @@
     scrapy crawl parldata_1994-1998
 
 The results will be exported to json files named by the crawler and crawliing timestamp.
+
+
+If not all of the speeches are required to be crawled you can restrict the crawler to visit the pages only the specified sitting and speeches:
+
+     scrapy crawl parldata_1990-1994 -a sitting_id=1
+
+     scrapy crawl parldata_1990-1994 -a sitting_id=1 -a speech_id=1

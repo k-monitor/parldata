@@ -22,6 +22,7 @@ class PlenarySitting(scrapy.Item):
     sitting_id = scrapy.Field()
     sitting_day = scrapy.Field()
     title = scrapy.Field()
+    sitting_uid = scrapy.Field()
 
 
 class Speech(scrapy.Item):
