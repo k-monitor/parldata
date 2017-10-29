@@ -6,7 +6,7 @@ from ..items import Speech
 from urllib.parse import urljoin
 
 
-class Parldata19901994Spider(scrapy.Spider):
+class Parldata_1990_1994_Spider(scrapy.Spider):
 
     name = 'parldata_1990-1994'
 
