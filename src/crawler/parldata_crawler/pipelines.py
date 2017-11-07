@@ -7,5 +7,10 @@
 
 
 class ParldataCrawlerPipeline(object):
+
     def process_item(self, item, spider):
+
+        # Normalize parsed speech text
+        if item['text']:
+            item['text'] = item['text'].replace('A felszólalás szövege:', '').replace(u'\xa0', u' ')
         return item
