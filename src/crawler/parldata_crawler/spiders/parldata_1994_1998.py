@@ -21,6 +21,7 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
         super(Parldata_1994_1998_Spider, self).__init__(*args, **kwargs)
         self.sitting_id = sitting_id
         self.speech_id = speech_id
+        self.term_id = 35
 
     def parse(self, response):
         term_url = response.xpath("//a[text()='1994-98']/@href").extract_first()

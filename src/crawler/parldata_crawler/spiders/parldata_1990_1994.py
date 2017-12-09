@@ -21,6 +21,7 @@ class Parldata_1990_1994_Spider(scrapy.Spider):
         super(Parldata_1990_1994_Spider, self).__init__(*args, **kwargs)
         self.sitting_id = sitting_id
         self.speech_id = speech_id
+	self.term_id = 34
 
 
     def parse(self, response):
