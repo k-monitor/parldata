@@ -56,8 +56,7 @@ entrypoints==0.2.3
 ftfy==4.4.3
 gensim==2.3.0
 html5lib==0.999999999
-hunlp==0.2.0
-idna==2.5
+https://github.com/oroszgy/spacy-hungarian-models/releases/download/hu_tagger_web_md-0.1.0/hu_tagger_web_md-0.1.0.tar.gz
 ijson==2.3
 ipykernel==4.6.1
 ipython==6.1.0
