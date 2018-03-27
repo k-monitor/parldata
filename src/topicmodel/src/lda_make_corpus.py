@@ -1,83 +1,62 @@
-import codecs
+import pickle
+import operator
 import itertools
+import ijson.backends.yajl2 as ijson
 from os import listdir
-from datetime import datetime
+from os.path import isfile, join
+from collections import Counter
 from gensim import corpora
-from gensim.models import LdaModel
-from os.path import join, isfile
-from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
-# TODO:
-# - simplify
 
-print('Starting')
-print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-in_path = 'data/lda_corpus'
-in_files = [f for f in listdir(in_path) if isfile(join(in_path, f))]
-in_files = sorted(in_files)
 
-print('Files have been read') # 0.2sec
-print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+in_path = 'data/raw'
+jsons = [f for f in listdir(in_path) if isfile(join(in_path, f))]
+jsons = sorted(jsons)
 
-# Run only once, it takes decades to write out everything
-# iterates over 322.175 docs
-# of = codecs.open('data/corpus/doc_ids.tsv', 'w', 'utf-8')
-#
-#
-# def write_info(f):
-#     i = str(in_files.index(f))
-#     o = i + '\t' + f + '\n'
-#     of.write(o)
-#
-# with ThreadPoolExecutor(max_workers=40) as executor:
-#     executor.map(write_info, in_files)
-#
-# print('Docids are ready') # 1:34 mins
-# print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+good_pos = ['noun', 'adj', 'propn']
 
-f1 = codecs.open('data/corpus/stoplist.txt', 'r', 'utf-8')
-stoplist = []
-for l in f1:
-    stoplist.append(l.strip())
-
-# this part of the code is dirty! 
+fids = []
 texts = []
-for i in range(0, len(in_files)):
-    texts.append([])
+for f in jsons:
+    with open(join(in_path, f), 'rb') as infile:
+        parser = ijson.parse(infile)
+        for prefix, type, value in parser:
+            if prefix == 'item.id':
+                fid = value.strip()
+                fids.append(fid)
+            if prefix == 'item.lemmatized':
+                wds = value.strip().lower().split()
+                filtered = []
+                for w in wds:
+                    w, pos = w.rsplit('_', 1)
+                    if pos in good_pos:
+                        filtered.append(w)
+                texts.append(filtered)
+
+with open('src/topicmodel/data/corpus/stoplist.txt', 'r') as infile:
+    stoplist = []
+    for l in infile:
+        stoplist.append(l.strip())
+
+merged = list(itertools.chain(*texts))
+wfreq = Counter(merged)
+sorted_wf = sorted(wfreq.items(), key=operator.itemgetter(1), reverse=True)
+sorted_wf = [e[0] for e in sorted_wf if e[1] > 50 and e[0] not in stoplist]
+sorted_wf = sorted_wf[25:]
+
+n = int(round((len(sorted_wf) / 2) ** (1/3)))
+print('The number of topics is:', n)
 
 
-def read_text(f):
-    t = (codecs.open(join(in_path, f), 'r', 'utf-8').read().split())
-    t = [w for w in t if w not in stoplist]
-    i = in_files.index(f)
-    texts[i] = t
-
-with ThreadPoolExecutor(max_workers=40) as executor:
-    # on a laptop, or with older processors with 2 physical cores, use 10-20 workers
-    executor.map(read_text, in_files)
-
-print('Raw corpus is ready') # 1:23
-print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+def filter_text(lst):
+    return [wd for wd in lst if wd in sorted_wf]
 
 
-f2 = codecs.open('data/meta/content_words.csv', 'r', 'utf-8')
-frequency = defaultdict(int)
-for l in f2:
-    wd, freq = l.strip().split('\t')
-    frequency[wd] = int(freq)
-print('Word frequency is ready')
-print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+filtered_txts = [filter_text(t) for t in texts]
 
+with open('data/corpus/fids.pkl', 'wb') as pf:
+    pickle.dump(fids, pf)
 
-merged = set(list(itertools.chain(*texts)))
-n = int(round((len(merged) / 2) ** (1/3)))
-print('The number of to pics is:', n)
-print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-
-dictionary = corpora.Dictionary(texts)
+dictionary = corpora.Dictionary(filtered_txts)
 dictionary.save('data/corpus/parla.dict')
-corpus = [dictionary.doc2bow(text) for text in texts]
+corpus = [dictionary.doc2bow(text) for text in filtered_txts]
 corpora.MmCorpus.serialize('data/corpus/parla.mm', corpus)
-
-print('Done')
-print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
