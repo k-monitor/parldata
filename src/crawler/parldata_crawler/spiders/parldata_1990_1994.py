@@ -74,9 +74,13 @@ class Parldata_1990_1994_Spider(scrapy.Spider):
 
         for index, speech in enumerate(speeches):
             speech_id = str(index + 1)
+            speech_url = speech.xpath('a/@href').extract_first()
+            if speech_url is None:
+                self.logger.debug("No link for speech - maybe not a speech at all. url: %s, li index: %s" % (response.url, index))
+                continue
             s = Speech(
                 id="%s-%s" % (ps['sitting_uid'], speech_id),
-                url =  urljoin(response.url, unicodedata.normalize('NFKD', speech.xpath('a/@href').extract_first())),
+                url =  urljoin(response.url, unicodedata.normalize('NFKD', speech_url)),
                 speaker = speech.xpath('a/following-sibling::text()').extract_first().strip()
             )
 
