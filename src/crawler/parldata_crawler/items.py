@@ -47,5 +47,5 @@ class Speech(scrapy.Item):
     type = scrapy.Field() # 1998-
     committee = scrapy.Field() # 1998-
     started_at = scrapy.Field()  # 1998-
-    duration = scrapy.Field()  # 1998-
+    duration = scrapy.Field()  # 1998-, 1994?-
     video_url = scrapy.Field()  # 2002-

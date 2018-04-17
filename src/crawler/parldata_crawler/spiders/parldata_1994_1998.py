@@ -40,20 +40,20 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
             #self.logger.debug("  processing row: %s" % index)
             toc_url = row.xpath('td[1]/a/@href').extract_first()
             if toc_url: # and toc_url.startswith('http://www.parlament.hu/naplo35/004/'):
-                sitting_date = row.xpath('td[1]/a/text()').extract_first()
+                sitting_date = row.xpath('td[1]/a/text()').extract_first().strip()
                 sitting_id = sitting_date.partition("(")[2].partition(")")[0]
                 ps = PlenarySitting(
                     term='35',
                     date=sitting_date.partition("(")[0],
                     toc_url=toc_url,
-                    day=row.xpath('td[2]/text()').extract_first(),
-                    session=row.xpath('td[3]/text()').extract_first(),
-                    type=row.xpath('td[4]/text()').extract_first(),
-                    day_of_session=row.xpath('td[5]/text()').extract_first(),
-                    duration_raw=row.xpath('td[6]/a/text()').extract_first(),
-                    duration=row.xpath('td[7]/text()').extract_first(),
-                    sitting_id=row.xpath('td[8]/text()').extract_first(),
-                    sitting_day=row.xpath('td[9]/text()').extract_first(),
+                    day=row.xpath('td[2]/text()').extract_first().strip(),
+                    session=row.xpath('td[3]/text()').extract_first().strip(),
+                    type=row.xpath('td[4]/text()').extract_first().strip(),
+                    day_of_session=row.xpath('td[5]/text()').extract_first().strip(),
+                    duration_raw=row.xpath('td[6]/a/text()').extract_first().strip(),
+                    duration=row.xpath('td[7]/text()').extract_first().strip(),
+                    sitting_id=row.xpath('td[8]/text()').extract_first().strip(),
+                    sitting_day=row.xpath('td[9]/text()').extract_first().strip(),
                     sitting_uid="35-%s" % (sitting_id)
                 )
                 request = scrapy.Request(toc_url, callback=self.parse_sitting_toc)
@@ -85,17 +85,23 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
 
             # find speaker
             if len(speech_refs) == 1:
-                s['speaker'] = speech_refs[0].xpath('following-sibling::text()').extract(),
+                s['speaker'] = speech_refs[0].xpath('following-sibling::text()').extract_first().strip()
+
             elif len(speech_refs) == 2:
-                s['speaker'] = speech_refs[1].xpath('text()').extract_first()
+                s['speaker'] = speech_refs[1].xpath('text()').extract_first().strip()
                 s['speaker_url'] = urljoin(response.url, unicodedata.normalize('NFKD', speech_refs[1].xpath('@href').extract_first()))
+                duration = speech_refs[1].xpath('following-sibling::text()').extract_first()
+                if duration != '\n':
+                    s['duration'] = duration.strip(' \n')[2:6]
+                    #self.logger.debug("###########3 DURA: [%s] [%s]" % (duration, s['duration']))
+
 
             #self.logger.debug("Found speech: %s" % s)
 
             # find topic of next speech
             topics = speech.xpath('h4')
             if topics:
-                topic = topics[-1].xpath('text()').extract_first()
+                topic = topics[-1].xpath('text()').extract_first().strip(' (')
                 topic_href_attr = topics[-1].xpath('a/@href').extract_first()
                 if topic_href_attr:
                     topic_url = urljoin(response.url, unicodedata.normalize('NFKD', topic_href_attr))
@@ -137,18 +143,18 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
         s['plenary_sitting_details'] = ps
 
         if s['bill_url']:
-            self.logger.debug("  has bill url, following: %s" % s['id'])
+            #self.logger.debug("  has bill url, following: %s" % s['id'])
             request = scrapy.Request(s['bill_url'], callback=self.parse_bill, dont_filter=True)
             request.meta['speech'] = s
             yield request
         else:
-            self.logger.debug("has not got bill url, returning: %s" % s['id'])
+            #self.logger.debug("has not got bill url, returning: %s" % s['id'])
             yield s
 
     def parse_bill(self, response):
         s = response.meta['speech']
         self.logger.debug("processing bill %s speech: %s" % (response.url, s['id']))
-        s['bill_title']=response.xpath('//h2/text()').extract_first()
-        s['bill_details']=' '.join(response.xpath('//p/text()').extract())
-        self.logger.debug("Fully processed speech: %s" % s['id'])
+        s['bill_title']=response.xpath('//h2/text()').extract_first().strip()
+        s['bill_details']=' '.join(response.xpath('//p/text()').extract()).strip()
+        #self.logger.debug("Fully processed speech: %s" % s['id'])
         yield s

@@ -9,13 +9,17 @@ import re
 
 class ParldataCrawlerPipeline(object):
 
-    speaker_patterns = ["-\s*Elnök:\s*([^\-\)]+)\s*[\-\)]", "Az elnöki széket (.*) foglalja"]
+    speaker_patterns = ["-\s*Elnök:\s*([^\-\)\r\n]+)\s*[\-\)\r\n]", "Az elnöki széket (.*) foglalja"]
 
     def process_item(self, item, spider):
 
         # Normalize parsed speech text
         if 'text' in item:
             item['text'] = item['text'].replace('A felszólalás szövege:', '').replace(u'\xa0', u' ')
+
+        if 'speaker' in item and item['speaker']:
+            item['speaker'] = item['speaker'].strip(' :')
+
 
         header_match_probe = True
         # 1990-94/31
@@ -24,7 +28,7 @@ class ParldataCrawlerPipeline(object):
             header_match_probe = False
             g1 = speaker_with_party_match.group(1).strip()
             g2 = speaker_with_party_match.group(2).strip()
-            if g1.lower() == 'elnök:':
+            if g1.lower() == 'elnök':
                 item['speaker'] = g2
                 item['speaker_title'] = 'Elnök'
             else:
@@ -45,6 +49,6 @@ class ParldataCrawlerPipeline(object):
         if 'speaker' in item and item['speaker'].isupper():
             item['speaker'] = item['speaker'].title()
 
-        item['text'] = re.sub('[\r\n]+', '\n', item['text'])
+        item['text'] = re.sub('\s*[\r\n]+', '\n', item['text'])
 
         return item
