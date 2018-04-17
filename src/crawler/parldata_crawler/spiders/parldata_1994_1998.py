@@ -120,10 +120,10 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
         s = response.meta['speech']
         ps = response.meta['plenary_sitting']
 
-        if not 'title' in ps:
-            title = response.xpath('//pre/text()').extract_first()
-            if title:
-                ps['title'] = title
+        if not 'header' in ps:
+            header = response.xpath('//pre/text()').extract_first()
+            if header:
+                ps['header'] = header.strip()
 
         s['text'] = ' '.join(response.xpath('//p/text()').extract())
         prev_speech_url_frag = response.xpath(u"//a[text() = 'El\xf5z\xf5']/@href").extract_first()

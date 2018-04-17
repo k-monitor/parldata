@@ -21,7 +21,7 @@ class PlenarySitting(scrapy.Item):
     duration = scrapy.Field()
     sitting_id = scrapy.Field()
     sitting_day = scrapy.Field()
-    title = scrapy.Field()
+    header = scrapy.Field()
     sitting_uid = scrapy.Field()
     sitting_nr = scrapy.Field()
     note = scrapy.Field() # 2002-
@@ -29,11 +29,11 @@ class PlenarySitting(scrapy.Item):
     video_time = scrapy.Field()  # 2002-
 
 
-
 class Speech(scrapy.Item):
     id = scrapy.Field()
     url = scrapy.Field()
     speaker = scrapy.Field()
+    speaker_title = scrapy.Field()
     speaker_party = scrapy.Field()  # 1998-
     speaker_url = scrapy.Field() # 1994-
     text = scrapy.Field()
