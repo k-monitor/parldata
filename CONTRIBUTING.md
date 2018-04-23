@@ -9,7 +9,7 @@ In this project we are developing a tool aiming at making parliamentary speeches
 We would love to have you as a participant in this project. We have a [Code of Conduct](https://github.com/k-monitor/parldata/blob/master/CODE_of_CONDUCT.md), applicable to all, who are participating in this project. Please read it carefully.
 
 ## Where are we now?
-We are building the frontend enabling end-users the search of the parliamentary speeches using keywords filtering for year, speaker, and topics. The number of documents in the database are drawn on the histogram, and the results are returned underneath using pagination. For earlier phases see our [roadmap.](https://github.com/k-monitor/parldata/blob/master/ROADMAP.md) We have a basic mockup about the platform to be built, which looks like this:
+We are building the frontend enabling end-users the search of the parliamentary speeches using keywords filtering for year, speaker, and topics. The number of documents in the database are drawn on the histogram, and the results are returned underneath. For earlier phases see our [roadmap.](https://github.com/k-monitor/parldata/blob/master/ROADMAP.md) We have a basic mockup about the platform to be built, which looks like this:
 ![parldata_frontend_mockup_1](https://user-images.githubusercontent.com/9154908/39094527-1778fe24-4631-11e8-8b5e-cdf81f64d3a0.png)
 
 ## How can you help?
