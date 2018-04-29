@@ -166,10 +166,14 @@ class ParldataSpider(scrapy.Spider):
         ps = response.meta['plenary_sitting']
 
         data_table = response.xpath('//div[@id="egy_felszolalas"]/table')
-        speaker_fulltext = data_table.xpath('tr[2]/td[2]/a/text()').extract_first()
-        s['speaker'] = speaker_fulltext.partition("(")[0].strip()
-        s['speaker_party'] = speaker_fulltext.partition("(")[2].partition(")")[0]
-        s['speaker_url'] = urljoin(response.url, unicodedata.normalize('NFKD', data_table.xpath('tr[2]/td[2]/a/@href').extract_first()))
+        speaker_fulltext = data_table.xpath('tr[2]/td[2]//text()').extract_first()
+        if speaker_fulltext.find("(") > -1:
+            s['speaker'] = speaker_fulltext.partition("(")[0].strip()
+            s['speaker_party'] = speaker_fulltext.partition("(")[2].partition(")")[0]
+        else:
+            s['speaker'] = speaker_fulltext
+        if len(data_table.xpath('tr[2]/td[2]/a')) > 0:
+            s['speaker_url'] = urljoin(response.url, unicodedata.normalize('NFKD', data_table.xpath('tr[2]/td[2]/a/@href').extract_first()))
         if self.term_id > 36:
             s['duration'] = data_table.xpath("tr[6]/td[2]/a/text()").extract_first()
             s['video_url'] = data_table.xpath("tr[6]/td[2]/a/@href").extract_first()
