@@ -7,7 +7,6 @@ from ..items import Speech
 from urllib.parse import urljoin
 
 
-
 class ParldataSpider(scrapy.Spider):
 
     name = "parldata"
@@ -100,14 +99,19 @@ class ParldataSpider(scrapy.Spider):
             bill_urls = []
             for index, row in enumerate(rows):
                 if index == 0:
-                    # topic
-                    topic = row.xpath("th/font/text()").extract_first().strip()
-                    bills = row.xpath("th/font/a")
+                    bills = row.xpath("th//a")
                     for bill_index, bill_ref in enumerate(bills):
                         bill_urls.append(urljoin(response.url,
                                     unicodedata.normalize('NFKD', bill_ref.xpath('@href').extract_first())))
                         bill_titles.append("%s %s" % (bill_ref.xpath('text()').extract_first(),
                                                       bill_ref.xpath('following-sibling::text()').extract_first()))
+
+                    # topic
+                    t = row.xpath("th/font/text()").extract()
+                    if len(t) == 1 or len(bills):
+                        topic = t[0].strip()
+                    else:
+                        topic = [t[0].strip(), " ".join(t[1:]).strip()]
 
                 elif index == 1:
                     # headers
@@ -135,7 +139,7 @@ class ParldataSpider(scrapy.Spider):
                             url="http://www.parlament.hu/internet/plsql/ogy_naplo.naplo_fadat?p_ckl=%d&p_uln=%s&p_felsz=%s&p_szoveg=&p_felszig=%s"
                                 % (self.term_id, ps['sitting_nr'], i, i),
                             type=row.xpath('td[3]/text()').extract_first(),
-                            committee=row.xpath('td[4]/text()').extract_first(),
+                            committee=row.xpath('td[4]//text()').extract_first(),
                             started_at=row.xpath('td[5]/text()').extract_first(),
                             topic=topic,
                             bill_title=bill_titles,
@@ -167,7 +171,16 @@ class ParldataSpider(scrapy.Spider):
         else:
             s['duration'] = data_table.xpath("tr[6]/td[2]/text()").extract_first()
 
-        s['text'] = ''.join(response.xpath('//div[@id="felsz_szovege"]//text()').extract())
+        content = response.xpath('//div[@class="pair-content"]/div')
+        text_parts = []
+        for content_part in content:
+            # since term 38 the text is not only in felsz_szovege div, there are multiple divs for the text without id
+            if content_part.xpath("@id").extract_first() == "egy_felszolalas":
+                continue
+            else:
+                text_parts.append(''.join(content_part.xpath('.//text()').extract()))
+
+        s['text'] = ''.join(text_parts)
         prev_speech_url_frag = response.xpath("//a[text()='Előző']/@href").extract_first()
         if prev_speech_url_frag:
             s['prev_speech_url'] = urljoin(response.url, unicodedata.normalize('NFKD', prev_speech_url_frag))
