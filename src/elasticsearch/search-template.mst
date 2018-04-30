@@ -1,0 +1,79 @@
+{
+  "template": "{
+      \"from\": {{from}}{{^from}}0{{/from}},
+      \"size\": {{size}}{{^size}}20{{/size}},
+      \"query\": {
+          \"bool\": {
+            \"must\": {
+              \"multi_match\": {
+                  \"query\":       \"{{q}}\",
+                  \"type\":        \"most_fields\",
+                  \"operator\":    \"and\",
+                  \"fields\":      [ \"text^10\", \"speaker^20\", \"speaker_party^15\", \"topic^25\", \"bill_title^25\", \"committee^5\"  ]
+              }
+            },
+            \"filter\": [
+              {{#filter.date}}
+                {\"term\": { \"date_filter\": \"{{filter.date}}\" }},
+              {{/filter.date}}
+              {{^filter.date}}
+              {\"match_all\": {} },
+              {{/filter.date}}
+
+              {{#filter.speaker}}
+                {\"term\": { \"speaker_filter\": \"{{filter.speaker}}\" }},
+              {{/filter.speaker}}
+              {{^filter.speaker}}
+              {\"match_all\": {} },
+              {{/filter.speaker}}
+
+              {{#filter.speaker_party}}
+                {\"term\": { \"speaker_party_filter\": \"{{filter.speaker_party}}\" }}
+              {{/filter.speaker_party}}
+              {{^filter.speaker_party}}
+              {\"match_all\": {} }
+              {{/filter.speaker_party}}
+            ]
+          }
+      },
+      \"highlight\" : {
+          \"number_of_fragments\" : 3,
+          \"fragment_size\" : 150,
+          \"fields\" : {
+              \"_all\" : { \"pre_tags\" : [\"<em>\"], \"post_tags\" : [\"</em>\"] },
+              \"speaker\" : {},
+              \"speaker_party\" : {},
+              \"topic\" : {},
+              \"bill_title\" : {},
+              \"committee\" : {},
+              \"text\" : {}
+          }
+      },
+      \"aggregations\": {
+         \"speakers\": {
+            \"terms\": {\"field\": \"speaker_filter\", \"size\": 25}
+         },
+         \"parties\": {
+            \"terms\": {\"field\": \"speaker_party_filter\", \"size\": 25}
+         },
+         \"terms\": {
+            \"terms\": {\"field\": \"term_filter\", \"order\" : { \"_key\" : \"asc\" }},
+                 \"aggregations\": {
+                   \"dates\": {
+                      \"terms\": {\"field\": \"date\", \"order\" : { \"_key\" : \"asc\" }, \"size\": 10000}
+                   }
+             }
+         },
+         \"bills\": {
+            \"terms\": {\"field\": \"bill_title_filter\", \"size\": 25}
+         },
+         \"topics\": {
+            \"terms\": {\"field\": \"topic_filter\", \"size\": 25}
+         },
+         \"types\": {
+            \"terms\": {\"field\": \"type_filter\", \"size\": 25}
+         }
+
+      }
+  }"
+}

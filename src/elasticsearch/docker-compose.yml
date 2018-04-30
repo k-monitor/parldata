@@ -1,0 +1,29 @@
+version: "3.3"
+
+services:
+
+  elasticsearch:
+    image: akalman/elasticsearch-oss-hu:6.2.4.0
+    container_name: elasticsearch
+    environment:
+      - cluster.name=parldata-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - search
+
+
+volumes:
+  esdata:
+    driver: local
+
+networks:
+  search:
