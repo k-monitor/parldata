@@ -74,6 +74,9 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
 
             speech_refs = speech.xpath('a')
             speech_id = str(index + 1)
+            if len(speech_refs) == 0:
+                self.logger.warn("Missing speech link at %s: %s" % (response.url, speech_id))
+                continue
             s = Speech(
                 id = "%s-%s" % (ps['sitting_uid'], speech_id),
                 url = urljoin(response.url, unicodedata.normalize('NFKD', speech_refs[0].xpath('@href').extract_first())),
