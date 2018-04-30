@@ -88,18 +88,19 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
 
             # find speaker
             if len(speech_refs) == 1:
-                s['speaker'] = speech_refs[0].xpath('following-sibling::text()').extract_first().strip()
+                speaker = ' '.join(speech.xpath('text()').extract()).strip(' :\r\n')
+                if speaker.find('[') == -1:
+                    s['speaker'] = speaker
+                else:
+                    s['speaker'] = speaker.partition("[")[0].strip(' :\r\n')
+                    s['duration'] = speaker.partition("[")[2].partition(" ")[0]
 
             elif len(speech_refs) == 2:
                 s['speaker'] = speech_refs[1].xpath('text()').extract_first().strip()
                 s['speaker_url'] = urljoin(response.url, unicodedata.normalize('NFKD', speech_refs[1].xpath('@href').extract_first()))
                 duration = speech_refs[1].xpath('following-sibling::text()').extract_first()
                 if duration != '\n':
-                    s['duration'] = duration.strip(' \n')[2:6]
-                    #self.logger.debug("###########3 DURA: [%s] [%s]" % (duration, s['duration']))
-
-
-            #self.logger.debug("Found speech: %s" % s)
+                    s['duration'] = duration.strip(' \n')[1:6]
 
             # find topic of next speech
             topics = speech.xpath('h4')
