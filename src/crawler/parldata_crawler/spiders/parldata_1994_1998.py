@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import unicodedata
+import re
 from ..items import PlenarySitting
 from ..items import Speech
 from urllib.parse import urljoin
@@ -37,9 +38,8 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
         self.logger.debug("processing page: %s" % response.url)
         rows = response.xpath('//table/tbody/tr')
         for index, row in enumerate(rows):
-            #self.logger.debug("  processing row: %s" % index)
             toc_url = row.xpath('td[1]/a/@href').extract_first()
-            if toc_url: # and toc_url.startswith('http://www.parlament.hu/naplo35/004/'):
+            if toc_url:
                 sitting_date = row.xpath('td[1]/a/text()').extract_first().strip()
                 sitting_id = sitting_date.partition("(")[2].partition(")")[0]
                 ps = PlenarySitting(
@@ -58,7 +58,6 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
                 )
                 request = scrapy.Request(toc_url, callback=self.parse_sitting_toc)
                 request.meta['plenary_sitting'] = ps
-                #self.logger.debug("  parsed obj: %s" % ps)
                 if self.sitting_id is None or self.sitting_id == sitting_id:
                     yield request
             else:
@@ -80,7 +79,6 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
             s = Speech(
                 id = "%s-%s" % (ps['sitting_uid'], speech_id),
                 url = urljoin(response.url, unicodedata.normalize('NFKD', speech_refs[0].xpath('@href').extract_first())),
-                #speaker = speech.xpath('a/following-sibling::text()').extract(),
                 topic=topic,
                 bill_url=topic_url
 
@@ -112,9 +110,9 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
                 else:
                     topic_url = ""
 
-            if s['url']: # and s['url'].startswith('http://www.parlament.hu/naplo35/004/004003'):
+            if s['url']:
 
-                prio = 99 if index == 0 else 0 # there is extra data on the page of the first speech, which should be indexed to all other speeches as well
+                prio = 99 if index == 0 else 0  # there is extra data on the page of the first speech, which should be indexed to all other speeches as well
                 request = scrapy.Request(s['url'], callback=self.parse_speech_text, priority=prio)
                 request.meta['plenary_sitting'] = response.meta['plenary_sitting']
                 request.meta['speech'] = s
@@ -138,21 +136,33 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
         s['text'] = ' '.join(response.xpath('//p/text()').extract())
         prev_speech_url_frag = response.xpath(u"//a[text() = 'El\xf5z\xf5']/@href").extract_first()
         if prev_speech_url_frag:
-            s['prev_speech_url'] = "%s/%s" % (response.url.rsplit('/', 1)[0], unicodedata.normalize('NFKD', prev_speech_url_frag).encode('ascii', 'ignore'))
+            s['prev_speech_url'] = urljoin(response.url, prev_speech_url_frag)
 
         next_speech_url_frag = response.xpath(u"//a[text() = 'K\xf6vetkez\xf5']/@href").extract_first()
         if next_speech_url_frag:
-            s['next_speech_url'] = "%s/%s" % (response.url.rsplit('/', 1)[0], unicodedata.normalize('NFKD', next_speech_url_frag).encode('ascii', 'ignore'))
+            s['next_speech_url'] = urljoin(response.url, next_speech_url_frag)
+
+        # 216/43
+        if not 'speaker' in s or len(s['speaker'].strip()) == 0:
+            idx = s['text'].find(':')
+            if idx > -1:
+                speaker = s['text'][0:idx]
+                speaker_with_title_match = re.search("([^\,]+)\,\s*(.+)", speaker)
+                if speaker_with_title_match:
+                    g1 = speaker_with_title_match.group(1).strip()
+                    g2 = speaker_with_title_match.group(2).strip()
+                    s['speaker'] = g1.title()
+                    s['speaker_title'] = g2
+                else:
+                    s['speaker'] = speaker
 
         s['plenary_sitting_details'] = ps
 
         if s['bill_url']:
-            #self.logger.debug("  has bill url, following: %s" % s['id'])
             request = scrapy.Request(s['bill_url'], callback=self.parse_bill, dont_filter=True)
             request.meta['speech'] = s
             yield request
         else:
-            #self.logger.debug("has not got bill url, returning: %s" % s['id'])
             yield s
 
     def parse_bill(self, response):
@@ -160,5 +170,4 @@ class Parldata_1994_1998_Spider(scrapy.Spider):
         self.logger.debug("processing bill %s speech: %s" % (response.url, s['id']))
         s['bill_title']=response.xpath('//h2/text()').extract_first().strip()
         s['bill_details']=' '.join(response.xpath('//p/text()').extract()).strip()
-        #self.logger.debug("Fully processed speech: %s" % s['id'])
         yield s
