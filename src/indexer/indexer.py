@@ -33,7 +33,7 @@ class Indexer(object):
                     self.logger.debug('Expected invalid line, skipping')
                     continue
                 try:
-                    src = json.loads(line.strip(' ,'))
+                    src = json.loads(line.strip(' ,\r\n'))
                     dest = {}
                     for w in ["id", "bill_title", "bill_url", "committee", "duration", "prev_speech_url",
                               "next_speech_url", "speaker", "speaker_title", "speaker_party", "speaker_url",
