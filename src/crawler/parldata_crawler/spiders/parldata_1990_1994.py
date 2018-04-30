@@ -21,7 +21,7 @@ class Parldata_1990_1994_Spider(scrapy.Spider):
         super(Parldata_1990_1994_Spider, self).__init__(*args, **kwargs)
         self.sitting_id = sitting_id
         self.speech_id = speech_id
-
+        self.term_id = 34
 
     def parse(self, response):
         term_url = response.xpath("//a[text()='1990-94']/@href").extract_first()
@@ -46,14 +46,14 @@ class Parldata_1990_1994_Spider(scrapy.Spider):
                     term='34',
                     date=sitting_date.partition("(")[0],
                     toc_url=toc_url,
-                    day=row.xpath('td[2]/text()').extract_first(),
-                    session=row.xpath('td[3]/text()').extract_first(),
-                    type=row.xpath('td[4]/text()').extract_first(),
-                    day_of_session=row.xpath('td[5]/text()').extract_first(),
-                    duration_raw=row.xpath('td[6]/a/text()').extract_first(),
-                    duration=row.xpath('td[7]/text()').extract_first(),
-                    sitting_id=row.xpath('td[8]/text()').extract_first(),
-                    sitting_day=row.xpath('td[9]/text()').extract_first(),
+                    day=row.xpath('td[2]/text()').extract_first().strip(),
+                    session=row.xpath('td[3]/text()').extract_first().strip(),
+                    type=row.xpath('td[4]/text()').extract_first().strip(),
+                    day_of_session=row.xpath('td[5]/text()').extract_first().strip(),
+                    duration_raw=row.xpath('td[6]/a/text()').extract_first().strip(),
+                    duration=row.xpath('td[7]/text()').extract_first().strip(),
+                    sitting_id=row.xpath('td[8]/text()').extract_first().strip(),
+                    sitting_day=row.xpath('td[9]/text()').extract_first().strip(),
                     sitting_uid="34-%s" % (sitting_id)
                 )
                 request = scrapy.Request(toc_url, callback=self.parse_sitting_toc)
@@ -68,14 +68,21 @@ class Parldata_1990_1994_Spider(scrapy.Spider):
         self.logger.debug("processing toc url: %s" % response.url)
         ps = response.meta['plenary_sitting']
         speeches = response.xpath('//li')
+        if len(speeches) == 0:
+            self.logger.warning("No speeches were found on plenary sitting: %s" % ps)
+            pass
+
         for index, speech in enumerate(speeches):
             speech_id = str(index + 1)
+            speech_url = speech.xpath('a/@href').extract_first()
+            if speech_url is None:
+                self.logger.debug("No link for speech - maybe not a speech at all. url: %s, li index: %s" % (response.url, index))
+                continue
             s = Speech(
                 id="%s-%s" % (ps['sitting_uid'], speech_id),
-                url =  urljoin(response.url, unicodedata.normalize('NFKD', speech.xpath('a/@href').extract_first())),
-                speaker = speech.xpath('a/following-sibling::text()').extract()
+                url =  urljoin(response.url, unicodedata.normalize('NFKD', speech_url)),
+                speaker = speech.xpath('a/following-sibling::text()').extract_first().strip()
             )
-            self.logger.debug("Found speech: %s" % s)
 
             if s['url']:# and s['url'].startswith('http://www.parlament.hu/naplo34/001/001001'):
 
@@ -95,12 +102,12 @@ class Parldata_1990_1994_Spider(scrapy.Spider):
         s = response.meta['speech']
         ps = response.meta['plenary_sitting']
 
-        if not 'title' in ps:
-            title = response.xpath('//pre/text()').extract_first()
-            if title:
-                ps['title'] = title
+        if not 'header' in ps:
+            header = response.xpath('//pre/text()').extract_first()
+            if header:
+                ps['header'] = header.strip()
 
-        s['text'] = ' '.join(response.xpath('//p/text()').extract())
+        s['text'] = ' '.join(response.xpath('//p/text()').extract()).strip()
         prev_speech_url_frag = response.xpath(u"//a[text() = 'El\xf5z\xf5']/@href").extract_first()
         if prev_speech_url_frag:
             s['prev_speech_url'] = "%s/%s" % (response.url.rsplit('/', 1)[0], unicodedata.normalize('NFKD', prev_speech_url_frag).encode('ascii', 'ignore'))
@@ -108,8 +115,6 @@ class Parldata_1990_1994_Spider(scrapy.Spider):
         next_speech_url_frag = response.xpath(u"//a[text() = 'K\xf6vetkez\xf5']/@href").extract_first()
         if next_speech_url_frag:
             s['next_speech_url'] = "%s/%s" % (response.url.rsplit('/', 1)[0], unicodedata.normalize('NFKD', next_speech_url_frag).encode('ascii', 'ignore'))
-
-        self.logger.debug("Fully processed speech: %s" % s)
 
         s['plenary_sitting_details'] = ps
         yield s
