@@ -1,14 +1,12 @@
-Elasticsearch configs of Hungarian parlamentary debate search engine
-====================================================================
+# Elasticsearch configs of Hungarian parlamentary debate search engine
 
 
-1. Requirements
----------------
+## 1. Requirements
+
 Elasticsearch 6.2 with hunspell and hungarian hunspell dictionaries installed
 
 
-2. Contents of this directory
------------------------------
+## 2. Contents of this directory
 
 - `mapping.json`: defines the structure of the Elasticsearch index
 - `search-template.mst`: Query template for facated search
@@ -16,8 +14,7 @@ Elasticsearch 6.2 with hunspell and hungarian hunspell dictionaries installed
 - `docker-compose.yml`: docker-compose file describing a test environment
 
 
-3. Running the test environment and proposed workflow
-------------------------------------------------------
+## 3. Running the test environment and proposed workflow
 
 ### 3.1. Start the test environment if it is not running yet
 
@@ -88,3 +85,16 @@ Query:
 ### 3.7. Delete old index if it is not needed anymore
 
     curl -XDELETE http://127.0.0.1:9200/parldata_v1
+
+
+
+## 4. Available search template params
+
+- `q`: the query
+- `size`: number of records to return, default: 20
+- `from`: the offset of records for paging, default: 0
+- `filter.date`: filter for the date of the speech, optional
+- `filter.date.from`: date of the speech filtering as interval, starting value, optional
+- `filter.date.to`: date of the speech filtering as interval, ending value, optional
+- `filter.speaker`: filter for the speaker, optional
+- `filter.speaker_party`: filter for the speaker party, optional

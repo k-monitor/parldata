@@ -20,6 +20,14 @@
               {\"match_all\": {} },
               {{/filter.date}}
 
+              {{#filter.date.from}}
+                {\"range\": { \"date_filter\": {\"gte\": \"{{filter.date.from}}\", \"lte\": \"{{filter.date.to}}\" }}},
+              {{/filter.date.from}}
+              {{^filter.date.from}}
+              {\"match_all\": {} },
+              {{/filter.date.from}}
+
+
               {{#filter.speaker}}
                 {\"term\": { \"speaker_filter\": \"{{filter.speaker}}\" }},
               {{/filter.speaker}}
