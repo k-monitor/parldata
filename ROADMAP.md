@@ -4,11 +4,15 @@ This is the Parliamentary Debates Open's roadmap. The aim of the project is to m
 
 - New crawler to download data from parlament.hu – done
 - Freshen the corpus – done
-- Process the text, handle old characters
+- Process the text – done
+- handle old characters
 - Do the topicmodelling
-- Prepare corpus to upload to Elasticsearch
+- Prepare corpus to upload to database – done
 - Prepare frontend
-  - search for keyword
+  - search for keyword – done
   - faceted search to filter data (speaker, date, party)
+  -- speaker filtering – done
+  -- date range filtering
+  -- party filtering
   - histogram of the distribution of the results of search
-  - show result texts for the search (few words before, search term, few words after to reveal the context), using pagination or scroll.
+  - show result texts for the search (few words before, search term, few words after to reveal the context), using pagination or scroll. – done
