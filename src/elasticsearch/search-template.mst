@@ -68,8 +68,11 @@
           }
       },
       \"highlight\" : {
+          \"type\": \"unified\",
+          \"boundary_scanner\": \"sentence\",
+          \"boundary_scanner_locale\": \"hu\",
           \"number_of_fragments\" : 3,
-          \"fragment_size\" : 150,
+          \"fragment_size\" : 0,
           \"fields\" : {
               \"_all\" : { \"pre_tags\" : [\"<em>\"], \"post_tags\" : [\"</em>\"] },
               \"speaker\" : {},
