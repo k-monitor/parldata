@@ -33,7 +33,7 @@ The index name is versioned, and the search uses aliases, so it can be recreated
 
 ### 3.3. Store the query templates
 
-    curl -XPOST http://127.0.0.1:9200/_scripts/filtered_query_v2?pretty -H "Content-Type: application/json" --data @search-template.mst
+    curl -XPOST http://127.0.0.1:9200/_scripts/filtered_query_v3?pretty -H "Content-Type: application/json" --data @search-template.mst
 
     curl -XPOST http://127.0.0.1:9200/_scripts/suggest_v1?pretty -H "Content-Type: application/json" --data @suggestion-template.mst
 
@@ -74,7 +74,7 @@ Query:
 
     curl http://127.0.0.1:9200/parldata/_search/template?pretty -H "Content-Type: application/json" -d '
     {
-      "id": "filtered_query_v2",
+      "id": "filtered_query_v3",
       "params": {
         "q": "atomerőmű",
         "size": 10
@@ -95,6 +95,22 @@ Query:
 - `from`: the offset of records for paging, default: 0
 - `filter.date`: filter for the date of the speech, optional
 - `filter.date.from`: date of the speech filtering as interval, starting value, optional
-- `filter.date.to`: date of the speech filtering as interval, ending value, optional
-- `filter.speaker`: filter for the speaker, optional
-- `filter.speaker_party`: filter for the speaker party, optional
+- `filter.date.to`: date of the speech filtering as interval, ending value, optional. Requires `filter.date.from` to be specified.
+- `filter.speakers`: filter for the speakers, optional. Expects an array of values.
+- `filter.speaker_parties`: filter for the speaker parties, optional. Expects an array of values
+
+
+Example:
+
+    curl http://127.0.0.1:9200/parldata/_search/template?pretty -H "Content-Type: application/json" -d '
+    {
+      "id": "filtered_query_v3",
+      "params": {
+        "q": "atomerőmű",
+        "size": 10,
+        "filter.date.from": "2017.01.01.",
+        "filter.date.to":"2017.12.31.",
+        "filter.speaker_parties":["Fidesz", "KDNP", "LMP", "Jobbik"],
+        "filter.speakers":["Lázár János", "Dr. Szél Bernadett", "Sneider Tamás"]
+      }
+    }'

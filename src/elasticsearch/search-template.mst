@@ -39,31 +39,20 @@
               {{#filter.date}}
                 {\"term\": { \"date_filter\": \"{{filter.date}}\" }},
               {{/filter.date}}
-              {{^filter.date}}
-              {\"match_all\": {} },
-              {{/filter.date}}
 
               {{#filter.date.from}}
                 {\"range\": { \"date_filter\": {\"gte\": \"{{filter.date.from}}\", \"lte\": \"{{filter.date.to}}\" }}},
               {{/filter.date.from}}
-              {{^filter.date.from}}
-              {\"match_all\": {} },
-              {{/filter.date.from}}
 
+              {{#filter.speakers}}
+                {\"terms\": { \"speaker_filter\": {{#toJson}}filter.speakers{{/toJson}} }},
+              {{/filter.speakers}}
 
-              {{#filter.speaker}}
-                {\"term\": { \"speaker_filter\": \"{{filter.speaker}}\" }},
-              {{/filter.speaker}}
-              {{^filter.speaker}}
-              {\"match_all\": {} },
-              {{/filter.speaker}}
+              {{#filter.speaker_parties}}
+                {\"terms\": { \"speaker_party_filter\": {{#toJson}}filter.speaker_parties{{/toJson}} }},
+              {{/filter.speaker_parties}}
 
-              {{#filter.speaker_party}}
-                {\"term\": { \"speaker_party_filter\": \"{{filter.speaker_party}}\" }}
-              {{/filter.speaker_party}}
-              {{^filter.speaker_party}}
               {\"match_all\": {} }
-              {{/filter.speaker_party}}
             ]
           }
       },
