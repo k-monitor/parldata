@@ -23,13 +23,13 @@ class ParldataSpider(scrapy.Spider):
         self.sitting_id = sitting_id
         self.speech_id = speech_id
         if term_id is None:
-            raise ValueError("Missing term id param! Value range: [34,40] (34: 1990-1994, ... 40: 2014-2018)")
+            raise ValueError("Missing term id param! Value range: [34,41] (34: 1990-1994, ... 40: 2014-2018, 41: 2018-)")
         else:
             self.term_id = int(term_id)
 
     def parse(self, response):
         d = (self.term_id - 34) * 4
-        term_url = response.xpath("//a[text()='%s-%s']/@href" % (1990 + d, (1994 + d) if self.term_id < 40 else '')).extract_first()
+        term_url = response.xpath("//a[text()='%s-%s']/@href" % (1990 + d, (1994 + d) if self.term_id < 41 else '')).extract_first()
         self.logger.debug("Intermediate page URL: %s" % term_url)
         yield scrapy.Request(term_url, callback=self.parse_intermediate_page)
 

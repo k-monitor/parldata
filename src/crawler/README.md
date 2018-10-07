@@ -24,7 +24,8 @@ Where term_id represents the parlamentary cycle:
 * 37: 2002-2006
 * 38: 2006-2010
 * 39: 2010-2014
-* 40: 2014-
+* 40: 2014-2018
+* 41: 2018-
 
 
 The results will be exported to json files named by the crawler, term and crawliing timestamp.
