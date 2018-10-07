@@ -29,14 +29,16 @@ class ParldataSpider(scrapy.Spider):
 
     def parse(self, response):
         d = (self.term_id - 34) * 4
-        term_url = response.xpath("//a[text()='%s-%s']/@href" % (1990 + d, (1994 + d) if self.term_id < 41 else '')).extract_first()
+        term_start = str(1990 + d)
+        term_end = str(1994 + d) if self.term_id < 41 else ''
+        term_url = response.xpath("//a[text()='{start}-{end}']/@href".format(start=term_start, end=term_end)).extract_first()
         self.logger.debug("Intermediate page URL: %s" % term_url)
         yield scrapy.Request(term_url, callback=self.parse_intermediate_page)
 
     def parse_intermediate_page(self, response):
         term_url = response.xpath("//a[text()='Ülésnap felszólalásai']/@href").extract_first()
         self.logger.debug("Term URL: %s" % term_url)
-        yield scrapy.Request(term_url, callback=self.parse_list_of_sittings)
+        yield scrapy.Request(term_url, callback=self.parse_list_of_sittings, meta={'dont_cache': True})
 
     def parse_list_of_sittings(self, response):
         self.logger.debug("processing page: %s" % response.url)
