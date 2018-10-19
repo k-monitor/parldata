@@ -11,6 +11,9 @@ If you are interested in an analysis we have made earlier, check out [this blog 
 
 Would you like to contribute? Please see the [CONTRIBUTING.md](https://github.com/k-monitor/parldata/blob/master/CONTRIBUTING.md) for more information.
 
+The test version of the project is available [here.](https://k-monitor.github.io/parliamentary_debates_open/)
+
+
 Project Organization
 ------------
 
