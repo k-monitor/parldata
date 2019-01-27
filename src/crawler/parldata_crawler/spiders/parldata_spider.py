@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import scrapy
+import json
 import unicodedata
 import re
+import requests
 from ..items import PlenarySitting
 from ..items import Speech
 from urllib.parse import urljoin
@@ -18,7 +20,23 @@ class ParldataSpider(scrapy.Spider):
         'http://www.parlament.hu/orszaggyulesi-naplo-elozo-ciklusbeli-adatai'
     ]
 
-    def __init__(self, term_id=None, sitting_id=None, speech_id=None, *args, **kwargs):
+    def create_indexed_sittings_query(self, term):
+        return {
+            "query": {
+                "bool": {
+                    "filter":   { "term": { "term": term }}
+                }
+            },
+            "size": 0,
+            "aggregations": {
+                "sittings": {
+                    "terms": {"field": "sitting_nr", "order": {"_key": "asc"}, "size": 9999}
+                }
+            }
+        }
+
+
+    def __init__(self, term_id=None, sitting_id=None, speech_id=None, index_url=None, *args, **kwargs):
         super(ParldataSpider, self).__init__(*args, **kwargs)
         self.sitting_id = sitting_id
         self.speech_id = speech_id
@@ -26,6 +44,15 @@ class ParldataSpider(scrapy.Spider):
             raise ValueError("Missing term id param! Value range: [34,40] (34: 1990-1994, ... 40: 2014-2018)")
         else:
             self.term_id = int(term_id)
+        if index_url is not None:
+            r = requests.post("%s/_search" % index_url, data=json.dumps(self.create_indexed_sittings_query(term_id)), headers={"Content-Type":"application/json"})
+            if not r.ok:
+                raise ValueError("Could not query index to create diff")
+            else:
+                d = r.json()
+                self.diff = True
+                self.indexed_sittings = [s['key'] for s in d['aggregations']['sittings']['buckets']]
+                self.logger.debug("Running in DIFF mode for term: %s, already indexed sittings: %s" % (self.term_id, self.indexed_sittings))
 
     def parse(self, response):
         d = (self.term_id - 34) * 4
@@ -81,9 +108,15 @@ class ParldataSpider(scrapy.Spider):
 
                 request = scrapy.Request(toc_url, callback=self.parse_sitting_toc)
                 request.meta['plenary_sitting'] = ps
-                if self.sitting_id is None or self.sitting_id == sitting_nr:
+                if self.diff:
+                    crawl_sitting = sitting_nr not in self.indexed_sittings
+                else:
+                    crawl_sitting = self.sitting_id is None or self.sitting_id == sitting_nr
+                if crawl_sitting:
                     self.logger.debug("  crawling sitting: %s", sitting_nr)
                     yield request
+                else:
+                    self.logger.debug("  skipping sitting: %s", sitting_nr)
             else:
                 continue
 
