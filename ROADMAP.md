@@ -6,13 +6,14 @@ This is the Parliamentary Debates Open's roadmap. The aim of the project is to m
 * Freshen the corpus – done
 * Process the text – done
 * handle old characters
-* Do the topicmodelling
+* do the topicmodelling
 * Prepare corpus to upload to database – done
+* finetune the stemmer
 
 * Frotend:
   - search for keyword – done
   - speaker filtering – done
-  - date range filtering
+  - date range filtering – done
   - party filtering
-  - histogram of the distribution of the results of search
+  - histogram of the distribution of the results of search – done
   - show result texts for the search (few words before, search term, few words after to reveal the context), using pagination or scroll. – done
