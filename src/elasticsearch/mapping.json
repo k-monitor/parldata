@@ -93,7 +93,7 @@
         "type": { "type": "keyword", "normalizer": "lc_norm", "copy_to": "type_filter"  },
         "type_filter": { "type": "keyword", "normalizer": "hun_accent" },
         "url": { "type": "keyword"  },
-        "suggest" : {"type" : "completion" }
+        "suggest" : {"type" : "completion", "max_input_length": 999 }
       }
     }
   }
