@@ -3,7 +3,7 @@
 
 ## 1. Requirements
 
-Elasticsearch 6.2 with hunspell and hungarian hunspell dictionaries installed
+Elasticsearch 7.0 with hunspell and hungarian hunspell dictionaries installed
 
 
 ## 2. Contents of this directory

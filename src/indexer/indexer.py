@@ -74,7 +74,6 @@ class Indexer(object):
         es = Elasticsearch(hosts=[self.es_host])
         k = ({
             "_index": self.index_name,
-            "_type": "parldata_record",
             "_id": idx,
             "_source": data,
         } for idx, data in self.decode_parldata_record())
