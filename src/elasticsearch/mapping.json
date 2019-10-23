@@ -5,7 +5,15 @@
                 "hu" : {
                     "char_filter": ["hun_accent_normalizer_filter"],
                     "tokenizer" : "standard",
-                    "filter" : [ "hungarian_stopword", "hungarian_stemmer", "lowercase", "ascii_folding" ]
+                    "filter" : [
+                      "hungarian_stopword",
+                      "protect_hun_firstnames_from_stemmer",
+                      "protect_hun_geonames_from_stemmer",
+                      "protect_speaker_names_from_stemmer",
+                      "hungarian_stemmer",
+                      "lowercase",
+                      "ascii_folding"
+                    ]
                 }
             },
             "normalizer" : {
@@ -20,6 +28,21 @@
                 }
             },
             "filter" : {
+                "protect_hun_firstnames_from_stemmer": {
+                    "type": "keyword_marker",
+                    "ignore_case": true,
+                    "keywords_path": "custom/keyword_marker_lists/hun_firstnames.txt"
+                },
+                "protect_hun_geonames_from_stemmer": {
+                    "type": "keyword_marker",
+                    "ignore_case": true,
+                    "keywords_path": "custom/keyword_marker_lists/hun_geonames.txt"
+                },
+                "protect_speaker_names_from_stemmer": {
+                    "type": "keyword_marker",
+                    "ignore_case": true,
+                    "keywords_path": "custom/keyword_marker_lists/speaker_names.txt"
+                },
                 "hungarian_stemmer" : {
                     "type" : "hunspell",
                     "locale" : "hu_HU",
