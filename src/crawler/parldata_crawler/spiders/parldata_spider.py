@@ -17,7 +17,7 @@ class ParldataSpider(scrapy.Spider):
         'www.parlament.hu'
     ]
     start_urls = [
-        'http://www.parlament.hu/orszaggyulesi-naplo-elozo-ciklusbeli-adatai'
+        'https://www.parlament.hu/orszaggyulesi-naplo-elozo-ciklusbeli-adatai'
     ]
 
     def create_indexed_sittings_query(self, term):
@@ -40,6 +40,7 @@ class ParldataSpider(scrapy.Spider):
         super(ParldataSpider, self).__init__(*args, **kwargs)
         self.sitting_id = sitting_id
         self.speech_id = speech_id
+        self.diff = False
         if term_id is None:
             raise ValueError("Missing term id param! Value range: [34,41] (34: 1990-1994, ... 40: 2014-2018, 41: 2018-)")
         else:
@@ -82,9 +83,9 @@ class ParldataSpider(scrapy.Spider):
                 sitting_nr_padded = sitting_nr.rjust(3, '0')
                 # do not follow the link to the sitting toc, continue crawling on a simplier page instead
                 # the following link was broken in term 40
-                # toc_url = "http://www.parlament.hu/naplo%s/%s/%s.htm" % (self.term_id, sitting_nr_padded,
+                # toc_url = "https://www.parlament.hu/naplo%s/%s/%s.htm" % (self.term_id, sitting_nr_padded,
                 #                                                         sitting_nr_padded)
-                toc_url = "http://www.parlament.hu/internet/plsql/ogy_naplo.ulnap_felszo?p_lista=f&p_nap=%s&p_ckl=%s" \
+                toc_url = "https://www.parlament.hu/internet/plsql/ogy_naplo.ulnap_felszo?p_lista=f&p_nap=%s&p_ckl=%s" \
                           % (sitting_nr, self.term_id)
                 video_column_offset = 1 if self.term_id > 36 else 0
                 ps = PlenarySitting(
@@ -128,72 +129,71 @@ class ParldataSpider(scrapy.Spider):
 
         blocks = response.xpath('/html/body/div[@class="pair-content"]/table')
         for block_index, block in enumerate(blocks):
-            rows = block.xpath('tr')
+
             topic = ""
             bill_titles = []
             bill_urls = []
+
+            theader = block.xpath("thead")
+            bills = theader.xpath("tr[1]/th//a")
+            for bill_index, bill_ref in enumerate(bills):
+                bill_urls.append(urljoin(response.url,
+                            unicodedata.normalize('NFKD', bill_ref.xpath('@href').extract_first())))
+                bill_titles.append("%s %s" % (bill_ref.xpath('text()').extract_first(),
+                                              bill_ref.xpath('following-sibling::text()').extract_first()))
+
+            # topic
+            t = theader.xpath("tr[1]/th/font/text()").extract()
+            if len(t) == 1 or len(bills):
+                topic = t[0].strip()
+            else:
+                topic = [t[0].strip(), " ".join(t[1:]).strip(" \r\n\"")]
+
+            rows = block.xpath('tbody//tr')
+
             for index, row in enumerate(rows):
-                if index == 0:
-                    bills = row.xpath("th//a")
-                    for bill_index, bill_ref in enumerate(bills):
-                        bill_urls.append(urljoin(response.url,
-                                    unicodedata.normalize('NFKD', bill_ref.xpath('@href').extract_first())))
-                        bill_titles.append("%s %s" % (bill_ref.xpath('text()').extract_first(),
-                                                      bill_ref.xpath('following-sibling::text()').extract_first()))
+                # speeches
+                speech_ref = row.xpath('td[1]/a')
+                if len(speech_ref) > 0:
+                    speech_id = unicodedata.normalize('NFKD', speech_ref.xpath('text()').extract_first()).strip()
 
-                    # topic
-                    t = row.xpath("th/font/text()").extract()
-                    if len(t) == 1 or len(bills):
-                        topic = t[0].strip()
+                    # self.logger.debug("  ###  speech ID : %s", speech_id)
+                    # some of the speeches are published in batch, these should be processed separately
+                    range_id_match = re.fullmatch('([0-9]+)\-([0-9]+)', speech_id)
+                    if range_id_match:
+                        # self.logger.debug("######### RANGE ID MATCH")
+                        speech_id_range_start = int(range_id_match.group(1))
+                        speech_id_range_end = int(range_id_match.group(2)) + 1
                     else:
-                        topic = [t[0].strip(), " ".join(t[1:]).strip()]
+                        speech_id_range_start = int(speech_id)
+                        speech_id_range_end = int(speech_id) + 1
+                    for i in range(speech_id_range_start, speech_id_range_end):
+                        # self.logger.debug("  ###  speech ID from range: %s", i)
+                        s = Speech(
+                            id="%s-%s" % (ps['sitting_uid'], i),
+                            # url=urljoin(response.url, unicodedata.normalize('NFKD', speech_ref.xpath('@href').extract_first())),
+                            # using a more parseable url
+                            url="https://www.parlament.hu/internet/plsql/ogy_naplo.naplo_fadat?p_ckl=%d&p_uln=%s&p_felsz=%s&p_szoveg=&p_felszig=%s"
+                                % (self.term_id, ps['sitting_nr'], i, i),
+                            type=row.xpath('td[3]/text()').extract_first(),
+                            committee=row.xpath('td[4]//text()').extract_first(),
+                            started_at=row.xpath('td[5]/text()').extract_first(),
+                            topic=topic,
+                            bill_title=bill_titles,
+                            bill_url=bill_urls
 
-                elif index == 1:
-                    # headers
-                    continue
-                else:
-                    # speeches
-                    speech_ref = row.xpath('td[1]/a')
-                    if len(speech_ref) > 0:
-                        speech_id = unicodedata.normalize('NFKD', speech_ref.xpath('text()').extract_first()).strip()
 
-                        # self.logger.debug("  ###  speech ID : %s", speech_id)
-                        # some of the speeches are published in batch, these should be processed separately
-                        range_id_match = re.fullmatch('([0-9]+)\-([0-9]+)', speech_id)
-                        if range_id_match:
-                            # self.logger.debug("######### RANGE ID MATCH")
-                            speech_id_range_start = int(range_id_match.group(1))
-                            speech_id_range_end = int(range_id_match.group(2)) + 1
+                        )
+                        if self.speech_id is None or self.speech_id == str(i):
+                            request = scrapy.Request(s['url'], callback=self.parse_speech_text)
+                            request.meta['plenary_sitting'] = response.meta['plenary_sitting']
+                            request.meta['speech'] = s
+                            yield request
                         else:
-                            speech_id_range_start = int(speech_id)
-                            speech_id_range_end = int(speech_id) + 1
-                        for i in range(speech_id_range_start, speech_id_range_end):
-                            # self.logger.debug("  ###  speech ID from range: %s", i)
-                            s = Speech(
-                                id="%s-%s" % (ps['sitting_uid'], i),
-                                # url=urljoin(response.url, unicodedata.normalize('NFKD', speech_ref.xpath('@href').extract_first())),
-                                # using a more parseable url
-                                url="http://www.parlament.hu/internet/plsql/ogy_naplo.naplo_fadat?p_ckl=%d&p_uln=%s&p_felsz=%s&p_szoveg=&p_felszig=%s"
-                                    % (self.term_id, ps['sitting_nr'], i, i),
-                                type=row.xpath('td[3]/text()').extract_first(),
-                                committee=row.xpath('td[4]//text()').extract_first(),
-                                started_at=row.xpath('td[5]/text()').extract_first(),
-                                topic=topic,
-                                bill_title=bill_titles,
-                                bill_url=bill_urls
-
-
-                            )
-                            if self.speech_id is None or self.speech_id == str(i):
-                                request = scrapy.Request(s['url'], callback=self.parse_speech_text)
-                                request.meta['plenary_sitting'] = response.meta['plenary_sitting']
-                                request.meta['speech'] = s
-                                yield request
-                            else:
-                                continue
-                    else:
-                        self.logger.warn("Found row without speech ref: %s " % row)
-                        continue
+                            continue
+                else:
+                    self.logger.warn("Found row without speech ref: %s " % row)
+                    continue
 
     def parse_speech_text(self, response):
         self.logger.debug("processing speech: %s" % response.url)
