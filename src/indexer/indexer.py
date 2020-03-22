@@ -13,7 +13,13 @@ class Indexer(object):
         self.source_file = source_file
         self.limit = limit
         self.logger = logging.getLogger(__name__)
-        return
+
+    @staticmethod
+    def smart_truncate(content, length=250, suffix='...'):
+        if len(content) <= length:
+            return content
+        else:
+            return content[:length].rsplit(' ', 1)[0] + suffix
 
     def decode_parldata_record(self):
         self.logger.info("LIMIT: %s", self.limit)
@@ -57,13 +63,13 @@ class Indexer(object):
                         {"input": dest["speaker"], "weight": 10},
                     ]
                     if "speaker_party" in dest:
-                        dest["suggest"].append({"input": dest["speaker_party"], "weight": 5})
+                        dest["suggest"].append({"input": Indexer.smart_truncate(dest["speaker_party"]), "weight": 5})
                     if "type" in dest:
-                        dest["suggest"].append({"input": dest["type"], "weight": 7})
+                        dest["suggest"].append({"input": Indexer.smart_truncate(dest["type"]), "weight": 7})
                     if "topic" in dest:
-                        dest["suggest"].append({"input": dest["topic"], "weight": 5})
+                        dest["suggest"].append({"input": Indexer.smart_truncate(dest["topic"]), "weight": 5})
                     if "bill_title" in dest:
-                        dest["suggest"].append({"input": dest["bill_title"], "weight": 5})
+                        dest["suggest"].append({"input": Indexer.smart_truncate(dest["bill_title"]), "weight": 5})
 
                     yield dest['id'], dest
                 except ValueError as e:
