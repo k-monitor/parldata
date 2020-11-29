@@ -85,7 +85,7 @@ class ParldataSpider(scrapy.Spider):
                 # the following link was broken in term 40
                 # toc_url = "https://www.parlament.hu/naplo%s/%s/%s.htm" % (self.term_id, sitting_nr_padded,
                 #                                                         sitting_nr_padded)
-                toc_url = "https://www.parlament.hu/internet/plsql/ogy_naplo.ulnap_felszo?p_lista=f&p_nap=%s&p_ckl=%s" \
+                toc_url = "https://www.parlament.hu/internet/cplsql/ogy_naplo.ulnap_felszo?p_lista=f&p_nap=%s&p_ckl=%s" \
                           % (sitting_nr, self.term_id)
                 video_column_offset = 1 if self.term_id > 36 else 0
                 ps = PlenarySitting(
@@ -143,7 +143,7 @@ class ParldataSpider(scrapy.Spider):
                                               bill_ref.xpath('following-sibling::text()').extract_first()))
 
             # topic
-            t = theader.xpath("tr[1]/th/font/text()").extract()
+            t = theader.xpath("tr[1]/th/text()").extract()
             if len(t) == 1 or len(bills):
                 topic = t[0].strip()
             else:
@@ -173,7 +173,7 @@ class ParldataSpider(scrapy.Spider):
                             id="%s-%s" % (ps['sitting_uid'], i),
                             # url=urljoin(response.url, unicodedata.normalize('NFKD', speech_ref.xpath('@href').extract_first())),
                             # using a more parseable url
-                            url="https://www.parlament.hu/internet/plsql/ogy_naplo.naplo_fadat?p_ckl=%d&p_uln=%s&p_felsz=%s&p_szoveg=&p_felszig=%s"
+                            url="https://www.parlament.hu/internet/cplsql/ogy_naplo.naplo_fadat?p_ckl=%d&p_uln=%s&p_felsz=%s&p_szoveg=&p_felszig=%s"
                                 % (self.term_id, ps['sitting_nr'], i, i),
                             type=row.xpath('td[3]/text()').extract_first(),
                             committee=row.xpath('td[4]//text()').extract_first(),
