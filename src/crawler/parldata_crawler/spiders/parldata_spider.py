@@ -72,56 +72,52 @@ class ParldataSpider(scrapy.Spider):
         self.logger.debug("processing page: %s" % response.url)
         rows = response.xpath('//table/tbody/tr')
         for index, row in enumerate(rows):
-
-            # first row has only headers
-            if index > 0:
-                sitting_date = row.xpath('td[1]/a/text()').extract_first()
-                if sitting_date is None:
-                    self.logger.warn("Skipping row: %s", ''.join(row.xpath('.//text()').extract()))
-                    continue
-                sitting_nr = sitting_date.partition("(")[2].partition(")")[0]
-                sitting_nr_padded = sitting_nr.rjust(3, '0')
-                # do not follow the link to the sitting toc, continue crawling on a simplier page instead
-                # the following link was broken in term 40
-                # toc_url = "https://www.parlament.hu/naplo%s/%s/%s.htm" % (self.term_id, sitting_nr_padded,
-                #                                                         sitting_nr_padded)
-                toc_url = "https://www.parlament.hu/internet/cplsql/ogy_naplo.ulnap_felszo?p_lista=f&p_nap=%s&p_ckl=%s" \
-                          % (sitting_nr, self.term_id)
-                video_column_offset = 1 if self.term_id > 36 else 0
-                ps = PlenarySitting(
-                    term=self.term_id,
-                    date=sitting_date.partition("(")[0],
-                    toc_url=toc_url,
-                    day=row.xpath("td[%d]/text()" % 2).extract_first().strip(),
-                    session=row.xpath("td[%d]/text()" % (3 + video_column_offset)).extract_first(),
-                    type=row.xpath("td[%d]/text()" % (4 + video_column_offset)).extract_first(),
-                    day_of_session=row.xpath("td[%d]/text()" % (5 + video_column_offset)).extract_first(),
-                    duration_raw=row.xpath("td[%d]/a/text()" % (6 + video_column_offset)).extract_first(),
-                    duration=row.xpath("td[%d]/text()" % (7 + video_column_offset)).extract_first(),
-                    sitting_id=row.xpath("td[%d]/text()" % (8 + video_column_offset)).extract_first(),
-                    sitting_day=row.xpath("td[%d]/text()" % (9 + video_column_offset)).extract_first(),
-                    note=row.xpath("td[%d]/text()" % (10 + video_column_offset)).extract_first(),
-                    sitting_uid="%s-%s" % (self.term_id, sitting_nr),
-                    sitting_nr=sitting_nr
-                )
-                # video column is useless in term 36
-                if self.term_id > 37:
-                    ps['video_time'] = row.xpath("td[3]/a/text()").extract_first()
-                    ps['video_url'] = row.xpath("td[3]/a/@href").extract_first()
-
-                request = scrapy.Request(toc_url, callback=self.parse_sitting_toc)
-                request.meta['plenary_sitting'] = ps
-                if self.diff:
-                    crawl_sitting = sitting_nr not in self.indexed_sittings
-                else:
-                    crawl_sitting = self.sitting_id is None or self.sitting_id == sitting_nr
-                if crawl_sitting:
-                    self.logger.debug("  crawling sitting: %s", sitting_nr)
-                    yield request
-                else:
-                    self.logger.debug("  skipping sitting: %s", sitting_nr)
-            else:
+            sitting_date = row.xpath('td[1]/a/text()').extract_first()
+            if sitting_date is None:
+                self.logger.warn("Skipping row: %s", ''.join(row.xpath('.//text()').extract()))
                 continue
+            sitting_nr = sitting_date.partition("(")[2].partition(")")[0]
+            sitting_nr_padded = sitting_nr.rjust(3, '0')
+            # do not follow the link to the sitting toc, continue crawling on a simplier page instead
+            # the following link was broken in term 40
+            # toc_url = "https://www.parlament.hu/naplo%s/%s/%s.htm" % (self.term_id, sitting_nr_padded,
+            #                                                         sitting_nr_padded)
+            toc_url = "https://www.parlament.hu/internet/cplsql/ogy_naplo.ulnap_felszo?p_lista=f&p_nap=%s&p_ckl=%s" \
+                      % (sitting_nr, self.term_id)
+            video_column_offset = 1 if self.term_id > 36 else 0
+            ps = PlenarySitting(
+                term=self.term_id,
+                date=sitting_date.partition("(")[0],
+                toc_url=toc_url,
+                day=row.xpath("td[%d]/text()" % 2).extract_first().strip(),
+                session=row.xpath("td[%d]/text()" % (3 + video_column_offset)).extract_first(),
+                type=row.xpath("td[%d]/text()" % (4 + video_column_offset)).extract_first(),
+                day_of_session=row.xpath("td[%d]/text()" % (5 + video_column_offset)).extract_first(),
+                duration_raw=row.xpath("td[%d]/a/text()" % (6 + video_column_offset)).extract_first(),
+                duration=row.xpath("td[%d]/text()" % (7 + video_column_offset)).extract_first(),
+                sitting_id=row.xpath("td[%d]/text()" % (8 + video_column_offset)).extract_first(),
+                sitting_day=row.xpath("td[%d]/text()" % (9 + video_column_offset)).extract_first(),
+                note=row.xpath("td[%d]/text()" % (10 + video_column_offset)).extract_first(),
+                sitting_uid="%s-%s" % (self.term_id, sitting_nr),
+                sitting_nr=sitting_nr
+            )
+            # video column is useless in term 36
+            if self.term_id > 37:
+                ps['video_time'] = row.xpath("td[3]/a/text()").extract_first()
+                ps['video_url'] = row.xpath("td[3]/a/@href").extract_first()
+
+            request = scrapy.Request(toc_url, callback=self.parse_sitting_toc)
+            request.meta['plenary_sitting'] = ps
+            if self.diff:
+                crawl_sitting = sitting_nr not in self.indexed_sittings
+            else:
+                crawl_sitting = self.sitting_id is None or self.sitting_id == sitting_nr
+            if crawl_sitting:
+                self.logger.debug("  crawling sitting: %s", sitting_nr)
+                yield request
+            else:
+                self.logger.debug("  skipping sitting: %s", sitting_nr)
+
 
     def parse_sitting_toc(self, response):
         # self.logger.debug("processing toc url: %s" % response.url)
