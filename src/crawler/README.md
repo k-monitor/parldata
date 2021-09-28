@@ -4,6 +4,18 @@
 - python 3.x
 - scrapy 1.4.0
 
+### 1.1. Set up a virtualenv
+```
+virtualenv -p python3 virtualenv
+. ./virtualenv/bin/activate
+pip -r requirements.txt
+```
+
+### 1.2. Set up a proxy list
+1. Download a list of proxies from https://www.proxyscrape.com/free-proxy-list. ssl enabled proxies are required.
+2. Filter the usable ones at https://www.proxyscrape.com/online-proxy-checker
+3. Save the result as `http_proxies.txt` to the `src/crawler` dir and add `http://` to each line
+
 ## 2. Running the crawlers
 
 
