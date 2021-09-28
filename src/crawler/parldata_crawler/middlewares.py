@@ -13,10 +13,10 @@ import logging
 class CaptchaDetectorMiddleware(object):
 
     def process_response(self, request, response, spider):
-        if 'CAPTHCHA' in response.text:
-            response.status = 500
+        if 'CAPTCHA' in response.text:
+            response.status = 503
             logging.getLogger('scrapy.proxies').warning(f'CAPTCHA was detected at: %s' % response.url)
-
+            return request
         return response
 
 
