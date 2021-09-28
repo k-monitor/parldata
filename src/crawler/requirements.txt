@@ -21,7 +21,8 @@ pyOpenSSL==19.0.0
 queuelib==1.5.0
 requests==2.22.0
 Scrapy==1.4.0
-scrapy-proxies==0.4
+# this fork has a serious proxy selector bug fixed
+git+https://github.com/ZmN5/scrapy-proxies
 service-identity==18.1.0
 six==1.12.0
 Twisted==19.7.0
