@@ -57,9 +57,8 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 1
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'scrapy_proxies.RandomProxy': 100,
-    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
-    'parldata_crawler.middlewares.CaptchaDetectorMiddleware': 501,
+    'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
+    'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
 }
 
 # Enable or disable extensions
@@ -106,7 +105,7 @@ HTTPCACHE_ENABLED = False
 # 1. Download a list of proxies from https://www.proxyscrape.com/free-proxy-list. ssl enabled proxies are required
 # 2. Filter the usable ones at https://www.proxyscrape.com/online-proxy-checker
 # 3. Save the result and add http:// to each line
-PROXY_LIST = 'http_proxies.txt'
-PROXY_MODE = 0
+ROTATING_PROXY_LIST_PATH = 'http_proxies.txt'
+ROTATING_PROXY_BAN_POLICY = 'parldata_crawler.policies.ParldataBanPolicy'
+ROTATING_PROXY_PAGE_RETRY_TIMES = 15
 RETRY_TIMES = 15
-RETRY_HTTP_CODES = [500, 503, 504, 400, 403, 404, 408]

@@ -6,18 +6,6 @@
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-import logging
-
-
-
-class CaptchaDetectorMiddleware(object):
-
-    def process_response(self, request, response, spider):
-        if 'CAPTCHA' in response.text:
-            response.status = 503
-            logging.getLogger('scrapy.proxies').warning('CAPTCHA was detected at: %s' % response.url)
-            return request
-        return response
 
 
 class ParldataCrawlerSpiderMiddleware(object):
