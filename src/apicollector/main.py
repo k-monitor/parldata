@@ -7,14 +7,8 @@ from argparse import ArgumentParser
 from collect import build_collection_of_downloaded_xml_ids, TERM_SITTING_XML_SAVE_DIRECTORY, \
     SITTING_HTML_SAVE_DIRECTORY, build_set_of_available_xml_ids, SPEECH_XML_SAVE_DIRECTORY, write_json_data, \
     term_sitting_speeches_metadata, gen_create_json_data_from_ids
-from utils import Limit, delete_last_metadata_xmls, get_last_n_existing_indexes_for_term, id_tuples_to_dict
-
-log_dir = Path(__file__).resolve().parent / 'logs'
-if log_dir.is_dir() is False:
-    log_dir.mkdir(parents=True, exist_ok=True)
-
-log_file = log_dir / datetime.now().strftime("%Y-%m-%dT%H:%M")
-logging.basicConfig(filename=f'{str(log_file)}.log', encoding='utf-8', level=logging.DEBUG)
+from utils import Limit, delete_last_metadata_xmls, get_last_n_existing_indexes_for_term, id_tuples_to_dict, \
+    check_dir_and_create
 
 
 def get_speeches_and_convert_to_jsonl(api_key, index_url, save_dir_path, mp_urls, start, end=Limit(43, 1, 1),
@@ -125,4 +119,9 @@ def main():
 
 
 if __name__ == '__main__':
+    print('STARTING...')
+    log_dir = check_dir_and_create(Path(__file__).resolve().parent / 'logs')
+    log_file = log_dir / datetime.now().strftime("%Y-%m-%dT%H:%M")
+    logging.basicConfig(filename=f'{str(log_file)}.log', encoding='utf-8', level=logging.DEBUG)
+
     main()

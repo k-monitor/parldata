@@ -1,5 +1,6 @@
 import re
 import math
+import time
 import logging
 import requests
 import pandas as pd
@@ -147,6 +148,9 @@ def check_dir_and_create(dir_path):
         dir_path = Path(dir_path)
     if dir_path.is_dir() is False:
         dir_path.mkdir(parents=True, exist_ok=True)
+
+    time.sleep(1)
+
     return dir_path
 
 

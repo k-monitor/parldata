@@ -11,17 +11,9 @@ from xml_read import create_sittings_dict, create_speeches_dict, create_plenary_
 from api_communication import fetch_speech_content, fetch_sitting_speech_listing, \
     fetch_term_sitting_listing
 
-log_file = Path(__file__).resolve().parent / 'logs' / f'{datetime.now().strftime("%Y-%m-%dT%H-%M")}.log'
-logging.basicConfig(filename=log_file, encoding='utf-8', level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-
-SPEECH_XML_SAVE_DIRECTORY = Path(__file__).resolve().parent / 'data'
-TERM_SITTING_XML_SAVE_DIRECTORY = Path(__file__).resolve().parent / 'metadata'
-SITTING_HTML_SAVE_DIRECTORY = Path(__file__).resolve().parent / 'metadata_htmls'
-
-check_dir_and_create(SPEECH_XML_SAVE_DIRECTORY)
-check_dir_and_create(TERM_SITTING_XML_SAVE_DIRECTORY)
-check_dir_and_create(SITTING_HTML_SAVE_DIRECTORY)
+SPEECH_XML_SAVE_DIRECTORY = check_dir_and_create(Path(__file__).resolve().parent / 'data')
+TERM_SITTING_XML_SAVE_DIRECTORY = check_dir_and_create(Path(__file__).resolve().parent / 'metadata')
+SITTING_HTML_SAVE_DIRECTORY = check_dir_and_create(Path(__file__).resolve().parent / 'metadata_htmls')
 
 
 def build_collection_of_downloaded_xml_ids(save_directory, start_from) -> set:
