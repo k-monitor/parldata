@@ -9,7 +9,11 @@ from collect import build_collection_of_downloaded_xml_ids, TERM_SITTING_XML_SAV
     term_sitting_speeches_metadata, gen_create_json_data_from_ids
 from utils import Limit, delete_last_metadata_xmls, get_last_n_existing_indexes_for_term, id_tuples_to_dict
 
-log_file = Path(__file__).resolve() / 'logs' / datetime.now().strftime("%Y-%m-%dT%H:%M")
+log_dir = Path(__file__).resolve() / 'logs'
+if log_dir.is_dir() is False:
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+log_file = log_dir / datetime.now().strftime("%Y-%m-%dT%H:%M")
 logging.basicConfig(filename=f'{str(log_file)}.log', encoding='utf-8', level=logging.DEBUG)
 
 
