@@ -9,7 +9,7 @@ from collect import build_collection_of_downloaded_xml_ids, TERM_SITTING_XML_SAV
     term_sitting_speeches_metadata, gen_create_json_data_from_ids
 from utils import Limit, delete_last_metadata_xmls, get_last_n_existing_indexes_for_term, id_tuples_to_dict
 
-log_dir = Path(__file__).resolve() / 'logs'
+log_dir = Path(__file__).resolve().parent / 'logs'
 if log_dir.is_dir() is False:
     log_dir.mkdir(parents=True, exist_ok=True)
 
