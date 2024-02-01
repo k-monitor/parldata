@@ -12,3 +12,15 @@ If you are interested in an analysis we have made earlier, check out [this blog 
 Would you like to contribute? Please see the [CONTRIBUTING.md](https://github.com/k-monitor/parldata/blob/master/CONTRIBUTING.md) for more information.
 
 The test version of the project is available [here.](https://k-monitor.github.io/parliamentary_debates_open/)
+
+
+parlament.hu API kapcsolat
+==============================
+
+A parlament.hu API három endpointot biztosít amire szükségünk van, mindegyik egy XML-t ad vissza:
+
+- Adott ciklus ülésnapjai
+- Egy ülésnap felszólalásainak listája
+- Egy ülésnap felszólalásának adatai (szöveg)
+
+Felszólalás adatainak metadatai [ebben a táblázatban](https://docs.google.com/document/d/1YcIPmthq7DwKL3jF6J9jE3f6ro7sR5c1Iv14YJlqaaw/edit?usp=sharing).
