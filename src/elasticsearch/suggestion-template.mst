@@ -1,15 +1,16 @@
 {
-  "template": "{
-    \"_source\": \"\",
-    \"suggest\": {
-      \"suggest\" : {
-        \"prefix\" : \"{{q}}\",
-           \"completion\" : {
-              \"field\" : \"suggest\",
-              \"skip_duplicates\": true
-            }
-         }
-     }
-  }"
+  "script": {
+    "lang": "mustache",
+    "source": "{
+      \"suggest\": {
+        \"suggest\" : {
+          \"prefix\" : \"{{q}}\",
+             \"completion\" : {
+                \"field\" : \"suggest\",
+                \"skip_duplicates\": true
+              }
+           }
+       }
+    }"
+  }
 }
-

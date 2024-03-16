@@ -1,106 +1,109 @@
 {
-  "template": "{
-      \"from\": {{from}}{{^from}}0{{/from}},
-      \"size\": {{size}}{{^size}}20{{/size}},
-      \"query\": {
-          \"bool\": {
+  "script": {
+    "lang": "mustache",
+    "source": "{
+        \"from\": {{from}}{{^from}}0{{/from}},
+        \"size\": {{size}}{{^size}}20{{/size}},
+        \"query\": {
+            \"bool\": {
 
-            \"must\": {
-              \"query_string\": {
-                  \"query\":            \"{{q}}\",
-                  \"type\":             \"most_fields\",
-                  \"default_operator\": \"and\",
-                  \"fields\":           [ \"text^10\", \"speaker^20\", \"speaker_party^15\", \"topic^5\", \"bill_title^5\", \"committee^5\"  ]
-              }
-            },
-
-            \"should\": [
-              {
-                  \"query_string\": {
-                      \"query\":            \"{{q}}\",
-                      \"type\":             \"phrase\",
-                      \"default_operator\": \"and\",
-                      \"boost\":            \"2.0\",
-                      \"fields\":           [ \"text^10\", \"speaker^20\", \"speaker_party^15\", \"topic^5\", \"bill_title^5\", \"committee^5\"  ]
-                  }
+              \"must\": {
+                \"query_string\": {
+                    \"query\":            \"{{q}}\",
+                    \"type\":             \"most_fields\",
+                    \"default_operator\": \"and\",
+                    \"fields\":           [ \"text^10\", \"speaker^20\", \"speaker_party^15\", \"topic^5\", \"bill_title^5\", \"committee^5\"  ]
+                }
               },
-              {
-                  \"query_string\": {
-                      \"query\":            \"{{q}}\",
-                      \"type\":             \"cross_fields\",
-                      \"default_operator\": \"and\",
-                      \"boost\":            \"0.1\",
-                      \"fields\":           [ \"text^10\", \"speaker^20\", \"speaker_party^15\", \"topic^5\", \"bill_title^5\", \"committee^5\"  ]
-                  }
-              }
-            ],
 
-            \"filter\": [
-              {{#filter.date}}
-                {\"term\": { \"date_filter\": \"{{filter.date}}\" }},
-              {{/filter.date}}
+              \"should\": [
+                {
+                    \"query_string\": {
+                        \"query\":            \"{{q}}\",
+                        \"type\":             \"phrase\",
+                        \"default_operator\": \"and\",
+                        \"boost\":            \"2.0\",
+                        \"fields\":           [ \"text^10\", \"speaker^20\", \"speaker_party^15\", \"topic^5\", \"bill_title^5\", \"committee^5\"  ]
+                    }
+                },
+                {
+                    \"query_string\": {
+                        \"query\":            \"{{q}}\",
+                        \"type\":             \"cross_fields\",
+                        \"default_operator\": \"and\",
+                        \"boost\":            \"0.1\",
+                        \"fields\":           [ \"text^10\", \"speaker^20\", \"speaker_party^15\", \"topic^5\", \"bill_title^5\", \"committee^5\"  ]
+                    }
+                }
+              ],
 
-              {{#filter.date.from}}
-                {\"range\": { \"date_filter\": {\"gte\": \"{{filter.date.from}}\", \"lte\": \"{{filter.date.to}}\" }}},
-              {{/filter.date.from}}
+              \"filter\": [
+                {{#filter.date}}
+                  {\"term\": { \"date_filter\": \"{{filter.date}}\" }},
+                {{/filter.date}}
 
-              {{#filter.speakers}}
-                {\"terms\": { \"speaker_filter\": {{#toJson}}filter.speakers{{/toJson}} }},
-              {{/filter.speakers}}
+                {{#filter.date.from}}
+                  {\"range\": { \"date_filter\": {\"gte\": \"{{filter.date.from}}\", \"lte\": \"{{filter.date.to}}\" }}},
+                {{/filter.date.from}}
 
-              {{#filter.speaker_parties}}
-                {\"terms\": { \"speaker_party_filter\": {{#toJson}}filter.speaker_parties{{/toJson}} }},
-              {{/filter.speaker_parties}}
+                {{#filter.speakers}}
+                  {\"terms\": { \"speaker_filter\": {{#toJson}}filter.speakers{{/toJson}} }},
+                {{/filter.speakers}}
 
-              {{#filter.types}}
-                {\"terms\": { \"type_filter\": {{#toJson}}filter.types{{/toJson}} }},
-              {{/filter.types}}
+                {{#filter.speaker_parties}}
+                  {\"terms\": { \"speaker_party_filter\": {{#toJson}}filter.speaker_parties{{/toJson}} }},
+                {{/filter.speaker_parties}}
 
-              {\"match_all\": {} }
-            ]
-          }
-      },
-      \"highlight\" : {
-          \"type\": \"unified\",
-          \"boundary_scanner\": \"sentence\",
-          \"boundary_scanner_locale\": \"hu\",
-          \"number_of_fragments\" : 3,
-          \"fragment_size\" : 0,
-          \"fields\" : {
-              \"_all\" : { \"pre_tags\" : [\"<em>\"], \"post_tags\" : [\"</em>\"] },
-              \"speaker\" : {},
-              \"speaker_party\" : {},
-              \"topic\" : {},
-              \"bill_title\" : {},
-              \"committee\" : {},
-              \"text\" : {}
-          }
-      },
-      \"aggregations\": {
-         \"speakers\": {
-            \"terms\": {\"field\": \"speaker_filter\", \"size\": 25}
-         },
-         \"parties\": {
-            \"terms\": {\"field\": \"speaker_party_filter\", \"size\": 25}
-         },
-         \"terms\": {
-            \"terms\": {\"field\": \"term_filter\", \"order\" : { \"_key\" : \"asc\" }},
-                 \"aggregations\": {
-                   \"dates\": {
-                      \"terms\": {\"field\": \"date\", \"order\" : { \"_key\" : \"asc\" }, \"size\": 10000}
-                   }
-             }
-         },
-         \"bills\": {
-            \"terms\": {\"field\": \"bill_title_filter\", \"size\": 25}
-         },
-         \"topics\": {
-            \"terms\": {\"field\": \"topic_filter\", \"size\": 25}
-         },
-         \"types\": {
-            \"terms\": {\"field\": \"type_filter\", \"size\": 25}
-         }
+                {{#filter.types}}
+                  {\"terms\": { \"type_filter\": {{#toJson}}filter.types{{/toJson}} }},
+                {{/filter.types}}
 
-      }
-  }"
+                {\"match_all\": {} }
+              ]
+            }
+        },
+        \"highlight\" : {
+            \"type\": \"unified\",
+            \"boundary_scanner\": \"sentence\",
+            \"boundary_scanner_locale\": \"hu\",
+            \"number_of_fragments\" : 3,
+            \"fragment_size\" : 0,
+            \"fields\" : {
+                \"_all\" : { \"pre_tags\" : [\"<em>\"], \"post_tags\" : [\"</em>\"] },
+                \"speaker\" : {},
+                \"speaker_party\" : {},
+                \"topic\" : {},
+                \"bill_title\" : {},
+                \"committee\" : {},
+                \"text\" : {}
+            }
+        },
+        \"aggregations\": {
+           \"speakers\": {
+              \"terms\": {\"field\": \"speaker_filter\", \"size\": 25}
+           },
+           \"parties\": {
+              \"terms\": {\"field\": \"speaker_party_filter\", \"size\": 25}
+           },
+           \"terms\": {
+              \"terms\": {\"field\": \"term_filter\", \"order\" : { \"_key\" : \"asc\" }},
+                   \"aggregations\": {
+                     \"dates\": {
+                        \"terms\": {\"field\": \"date\", \"order\" : { \"_key\" : \"asc\" }, \"size\": 10000}
+                     }
+               }
+           },
+           \"bills\": {
+              \"terms\": {\"field\": \"bill_title_filter\", \"size\": 25}
+           },
+           \"topics\": {
+              \"terms\": {\"field\": \"topic_filter\", \"size\": 25}
+           },
+           \"types\": {
+              \"terms\": {\"field\": \"type_filter\", \"size\": 25}
+           }
+
+        }
+    }"
+  }
 }

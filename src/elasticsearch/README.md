@@ -33,9 +33,9 @@ The index name is versioned, and the search uses aliases, so it can be recreated
 
 ### 3.3. Store the query templates
 
-    curl -XPOST http://127.0.0.1:9200/_scripts/filtered_query_v3?pretty -H "Content-Type: application/json" --data @search-template.mst
+    curl -XPUT http://127.0.0.1:9200/_scripts/filtered_query_v5?pretty -H "Content-Type: application/json" --data @search-template.mst
 
-    curl -XPOST http://127.0.0.1:9200/_scripts/suggest_v1?pretty -H "Content-Type: application/json" --data @suggestion-template.mst
+    curl -XPUT http://127.0.0.1:9200/_scripts/suggest_v1?pretty -H "Content-Type: application/json" --data @suggestion-template.mst
 
 ### 3.4. Index data with the [indexer](https://github.com/k-monitor/parldata/tree/master/src/indexer)
 
@@ -74,7 +74,7 @@ Query:
 
     curl http://127.0.0.1:9200/parldata/_search/template?pretty -H "Content-Type: application/json" -d '
     {
-      "id": "filtered_query_v3",
+      "id": "filtered_query_v5",
       "params": {
         "q": "atomerőmű",
         "size": 10
@@ -105,7 +105,7 @@ Example:
 
     curl http://127.0.0.1:9200/parldata/_search/template?pretty -H "Content-Type: application/json" -d '
     {
-      "id": "filtered_query_v3",
+      "id": "filtered_query_v5",
       "params": {
         "q": "atomerőmű",
         "size": 10,
