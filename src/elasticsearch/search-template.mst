@@ -52,6 +52,10 @@
                 {\"terms\": { \"speaker_party_filter\": {{#toJson}}filter.speaker_parties{{/toJson}} }},
               {{/filter.speaker_parties}}
 
+              {{#filter.types}}
+                {\"terms\": { \"type_filter\": {{#toJson}}filter.types{{/toJson}} }},
+              {{/filter.types}}
+
               {\"match_all\": {} }
             ]
           }

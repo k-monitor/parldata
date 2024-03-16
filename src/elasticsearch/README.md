@@ -98,6 +98,7 @@ Query:
 - `filter.date.to`: date of the speech filtering as interval, ending value, optional. Requires `filter.date.from` to be specified.
 - `filter.speakers`: filter for the speakers, optional. Expects an array of values.
 - `filter.speaker_parties`: filter for the speaker parties, optional. Expects an array of values
+- `filter.types`: filter for the speech types, optional. Expects an array of values
 
 
 Example:
@@ -111,6 +112,7 @@ Example:
         "filter.date.from": "2017.01.01.",
         "filter.date.to":"2017.12.31.",
         "filter.speaker_parties":["Fidesz", "KDNP", "LMP", "Jobbik"],
-        "filter.speakers":["Lázár János", "Dr. Szél Bernadett", "Sneider Tamás"]
+        "filter.speakers":["Lázár János", "Dr. Szél Bernadett", "Sneider Tamás"],
+        "filter.types": ["felszólalás", "napirend előtti felszólalás"]
       }
     }'
