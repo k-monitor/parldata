@@ -1,3 +1,5 @@
+import sys
+
 from copy import copy
 from pathlib import Path
 
@@ -106,7 +108,7 @@ def create_speech_dict(speech_soup, speeches_dict, plenary_sitting_details, term
     if len(text) > 0:
         sd['text'] = text
     else:
-        raise ValueError(f'Empty text in {term_id}-{sitting_id}-{speech_id}. Stopping.')
+        raise ValueError(f'Empty text in {term_id}-{sitting_id}-{speech_id} (most likely due to last entry, but if error persists later, check data source). Stopping.')
 
     sd['id'] = f'{term_id}-{sitting_id}-{speech_id}'
 
