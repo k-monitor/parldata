@@ -115,7 +115,7 @@ def main():
 
     get_speeches_and_convert_to_jsonl(args.api_key, args.index_url, save_dir, mp_urls,
                                       Limit(args.start_term, args.start_sitting, args.start_speech),
-                                      end=Limit(args.end_term, args.end_sitting, args.end_speech), mode='index')
+                                      end=Limit(args.end_term, args.end_sitting, args.end_speech), mode=args.mode)
 
 
 if __name__ == '__main__':
