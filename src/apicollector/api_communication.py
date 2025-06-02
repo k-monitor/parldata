@@ -8,6 +8,7 @@ BASE_URL = 'https://parlament.hu'
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0'
                          '.0.0 Safari/537.36'}
 
+session = requests.Session()
 
 def fetch_speech_content(p_ckl, p_uln, p_felsz, access_token, time_sleep: (None, int) = None):
     logging.info(f'FETCHING SPEECH CONTENT {p_ckl}-{p_uln}-{p_felsz}')
@@ -15,11 +16,11 @@ def fetch_speech_content(p_ckl, p_uln, p_felsz, access_token, time_sleep: (None,
           f'&p_felsz={p_felsz}'
 
     try:
-        response = requests.get(url)
+        response = session.get(url)
     except (requests.exceptions.ConnectionError, requests.exceptions.RequestException) as e:
         logging.debug(f'Requesting {p_ckl}-{p_uln}-{p_felsz} failed with {e} ! Retrying in 15 seconds...')
         time.sleep(15)
-        response = requests.get(url)
+        response = session.get(url)
 
     response.encoding = 'utf-8'
 
@@ -37,7 +38,7 @@ def fetch_speech_content(p_ckl, p_uln, p_felsz, access_token, time_sleep: (None,
 def fetch_sitting_speech_listing(p_ckl, p_nap, access_token):
     logging.info(f'FETCHING SITTING SPEECH LISTING - {p_ckl}-{p_nap}')
     url = f'{BASE_URL}/cgi-bin/web-api-pub/felszolalasok.cgi?access_token={access_token}&p_ckl={p_ckl}&p_nap={p_nap}'
-    response = requests.get(url)
+    response = session.get(url)
     response.encoding = 'utf-8'
 
     response_text = response.text
@@ -59,7 +60,7 @@ def fetch_term_sitting_listing(p_ckl, access_token):
     p_ckl = str(p_ckl)
 
     url = f'{BASE_URL}/cgi-bin/web-api-pub/ulesnap.cgi?access_token={access_token}&p_ckl={p_ckl}'
-    response = requests.get(url)
+    response = session.get(url)
     response.encoding = 'utf-8'
 
     response_text = response.text

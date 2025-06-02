@@ -41,7 +41,11 @@ def get_last_n_existing_indexes_for_term(
 def delete_last_metadata_xmls(metadata_dir, metadata_htmls, dummy=True):
     # most recent xmls shoudl be deleted so that they are downloaded again and refreshed
     to_unlink = []
-    max_term_xml_id = max([int(d.stem.split('_')[-1]) for d in metadata_dir.glob('*.xml')])
+    existing_xmls = [int(d.stem.split('_')[-1]) for d in metadata_dir.glob('*.xml')]
+    if len(existing_xmls) > 0:
+        max_term_xml_id = max(existing_xmls)
+    else:
+        max_term_xml_id = 0
     latest_term_xml_path = metadata_dir / f'term_{max_term_xml_id}.xml'
     if latest_term_xml_path.is_file():
         to_unlink.append(latest_term_xml_path)
@@ -149,7 +153,7 @@ def check_dir_and_create(dir_path):
     if dir_path.is_dir() is False:
         dir_path.mkdir(parents=True, exist_ok=True)
 
-    time.sleep(1)
+    # time.sleep(1)
 
     return dir_path
 

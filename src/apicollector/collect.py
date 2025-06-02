@@ -28,7 +28,7 @@ def build_collection_of_downloaded_xml_ids(save_directory, start_from) -> set:
     :param start_from: Limit object with term-sitting-speech IDs
     :return: collections dictionary that contains all saved speeches
     """
-
+    logging.info(f'Building collection of downloaded xml ids from {save_directory}...')
     collections_set = set()
 
     for term_dir_path in save_directory.iterdir():
@@ -101,12 +101,12 @@ def build_set_of_available_xml_ids(metadata_dir, api_key, start_from, metadata_h
                             success_from_xml = extract_speech_ids_from_sittings_xml_text(metadata_list, sitting_id,
                                                                                          sittings_xml_path,
                                                                                          sittings_xml_response_text,
-                                                                                         start_from, term_id)
+                                                                                         start_from, term_id, True)
                     else:
                         with open(sittings_xml_path) as fh:
                             success_from_xml = extract_speech_ids_from_sittings_xml_text(metadata_list, sitting_id,
                                                                                          sittings_xml_path, fh.read(),
-                                                                                         start_from, term_id)
+                                                                                         start_from, term_id, False)
                     if success_from_xml is False:
                         logging.error(f'FAILED TO RETRIEVE VALID SITTINGS XML FOR {term_id}-{sitting_id}, '
                                       f'TRYING WITH PANDAS !')
@@ -125,7 +125,7 @@ def build_set_of_available_xml_ids(metadata_dir, api_key, start_from, metadata_h
 
 
 def extract_speech_ids_from_sittings_xml_text(metadata_list, sitting_id, sittings_xml_path, sittings_xml_text,
-                                              start_from, term_id) -> bool:
+                                              start_from, term_id, write) -> bool:
     """
     Fill metadata_list from XML text of speech API response.
     """
@@ -139,10 +139,10 @@ def extract_speech_ids_from_sittings_xml_text(metadata_list, sitting_id, sitting
         for speech_id in sitting_speech_ids:
             if start_from.later(term_id, sitting_id, speech_id):
                 metadata_list.append((term_id, sitting_id, speech_id))
-
-        with open(sittings_xml_path, 'w') as fh:
-            fh.write(sittings_xml.prettify())
-            logging.info(f'SAVED XML {sittings_xml_path.stem}')
+        if write:
+            with open(sittings_xml_path, 'w') as fh:
+                fh.write(sittings_xml.prettify())
+                logging.info(f'SAVED XML term {term_id} {sittings_xml_path.name}')
 
     return success_from_xml
 
@@ -154,6 +154,7 @@ def term_sitting_speeches_metadata(ids_to_download_dict, sittings_metadata_from_
         - sitting_speeches_data: dict of metadata specific to certain speech
         - plenary_sitting_details: Metadata specific to sitting
     """
+    logging.info(f'Creating term-sitting-speeches metadata from {metadata_directory}...')
     term_sittings_dicts, sitting_speeches_dict = {}, {}
 
     for term_id in ids_to_download_dict:
@@ -237,7 +238,6 @@ def gen_create_json_data_from_ids(ids_to_download_dict, speeches_data, set_of_av
         all_c = len(sittings)
 
         for c, (sitting, speeches) in enumerate(sittings.items(), start=1):
-            print(f'Processing {term}-{sitting} speeches! Term: {term} {c}/{all_c}')
 
             sitting_speeches_data, psd = speeches_data[(term, sitting)]
 
@@ -253,10 +253,10 @@ def gen_create_json_data_from_ids(ids_to_download_dict, speeches_data, set_of_av
                 speech_soup = _download_or_open_speech_xml(term, sitting, speech_id, SPEECH_XML_SAVE_DIRECTORY, api_key,
                                                            time_sleep=time_sleep)
                 speech_data_as_dict = create_speech_dict(speech_soup, sitting_speeches_data, psd, term, sitting,
-                                                         prev_id, next_id, mp_urls)
+                                                         prev_id, next_id, speech_id, mp_urls)
 
                 check_speech_data(speech_data_as_dict)
-
+                logging.info(f'Processed term {term} sitting {sitting} speeches! {c}/{all_c}')
                 yield speech_data_as_dict
 
 

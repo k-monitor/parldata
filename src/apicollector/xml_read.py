@@ -1,5 +1,5 @@
 import sys
-
+import logging
 from copy import copy
 from pathlib import Path
 
@@ -92,10 +92,13 @@ def create_speeches_dict(soup):
 
 
 def create_speech_dict(speech_soup, speeches_dict, plenary_sitting_details, term_id, sitting_id, last_speech_id,
-                       next_speech_id, mp_urls):
+                       next_speech_id, current_speech_id, mp_urls):
     """
     Extract speech specific data from speech XML and insert into dict
     """
+    felszolalas_tag = speech_soup.find('felszolalas')
+    if felszolalas_tag is None:
+        raise ValueError(f'No speech tag found in {term_id}-{sitting_id}-{current_speech_id} XML!')
     speech_id = speech_soup.find('felszolalas')['sorsz']
     speech_id = int(speech_id)
 

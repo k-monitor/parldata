@@ -54,9 +54,6 @@ def get_speeches_and_convert_to_jsonl(api_key, index_url, save_dir_path, mp_urls
     ids_to_process = {i for i in set_of_available_xml_ids if i not in ids_to_not_process
                       and start.later(i[0], i[1], i[2]) and end.earlier(i[0], i[1], i[2])}
 
-    ids_to_process_as_string = "\n".join([" ".join([f"{i_[0]}-{i_[1]}-{i_[2]}" for i_ in list(ids_to_process)[i:i + 10]])
-                                          for i in range(0, len(ids_to_process), 10)])
-    logging.info(f'Processing the following IDs: {ids_to_process_as_string}')
 
     if min(ids_to_process) < min_indexed:
         raise ValueError(f'Earliest ID to process is earlier then earliest retrieved index! Cannot be sure that '
@@ -64,7 +61,10 @@ def get_speeches_and_convert_to_jsonl(api_key, index_url, save_dir_path, mp_urls
     else:
         ids_to_process = sorted(ids_to_process)  # for consistency
 
+    logging.info(f'Processing {len(ids_to_process)} IDs from {list(ids_to_process)[0]} to {list(ids_to_process)[-1]}')
+
     # Convert ID tuples to dict --> [term][sitting] = [speech1, speech2, ...]
+    logging.info(f'Converting ID tuples to dict')
     ids_to_process_dict = id_tuples_to_dict(ids_to_process)
 
     # Create a dictionary that holds: the sitting specific metadata, the plenary_sitting_details for each sitting
@@ -113,15 +113,17 @@ def main():
     with open(args.mp_urls_json) as fh:
         mp_urls = json.load(fh)
 
+    logging.info(f'STARTING with mode: {args.mode}')
+
     get_speeches_and_convert_to_jsonl(args.api_key, args.index_url, save_dir, mp_urls,
                                       Limit(args.start_term, args.start_sitting, args.start_speech),
                                       end=Limit(args.end_term, args.end_sitting, args.end_speech), mode=args.mode)
 
 
 if __name__ == '__main__':
-    print('STARTING...')
     log_dir = check_dir_and_create(Path(__file__).resolve().parent / 'logs')
     log_file = log_dir / datetime.now().strftime("%Y-%m-%dT%H:%M")
-    logging.basicConfig(filename=f'{str(log_file)}.log', encoding='utf-8', level=logging.DEBUG)
-
+    logging.basicConfig(encoding='utf-8', level=logging.DEBUG,
+                        handlers=[logging.FileHandler(f'{str(log_file)}.log'),
+                                  logging.StreamHandler()])
     main()
